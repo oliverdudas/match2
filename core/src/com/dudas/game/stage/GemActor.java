@@ -1,9 +1,12 @@
 package com.dudas.game.stage;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.dudas.game.Gem;
 import com.dudas.game.assets.Assets;
+import com.dudas.game.model.GemModel;
 
 /**
  * Created by OLO on 31. 1. 2015
@@ -16,13 +19,13 @@ public class GemActor extends Actor {
 
     private void init(float x, float y, float width, float height) {
         setBounds(x, y, width, height);
-        setTouchable(Touchable.disabled);
+        setTouchable(Touchable.enabled);
     }
 
     @Override
     public void draw(Batch batch, float parentAlpha) {
         batch.draw(
-                Assets.instance.assetGems.red,
+                getRegionByGemType(((Gem) getUserObject()).getType()),
                 this.getX(),
                 this.getY(),
                 this.getOriginX(),
@@ -36,4 +39,21 @@ public class GemActor extends Actor {
         );
     }
 
+    private TextureAtlas.AtlasRegion getRegionByGemType(GemModel.GemType type) {
+        switch (type) {
+            case RED:
+                return Assets.instance.assetGems.red;
+            case GREEN:
+                return Assets.instance.assetGems.green;
+            case BLUE:
+                return Assets.instance.assetGems.blue;
+            case PURPLE:
+                return Assets.instance.assetGems.purple;
+            case YELLOW:
+                return Assets.instance.assetGems.yellow;
+            case ORANGE:
+                return Assets.instance.assetGems.orange;
+        }
+        throw new RuntimeException("There is no region for gemType: " + type.name());
+    }
 }

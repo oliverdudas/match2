@@ -1,21 +1,39 @@
 package com.dudas.game.stage;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
+import com.dudas.game.Board;
 import com.dudas.game.Constants;
+import com.dudas.game.Gem;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 
 /**
  * Created by foxy on 04/02/2015.
  */
 public class GameStage extends Stage {
 
-    private Group group;
+    public static final String TAG = GameStage.class.getName();
 
-    public GameStage(Batch batch, float boardWidth, float boardHeight) {
+    private Group group;
+    private Board board;
+    private Vector2 touchPosition;
+    private Actor selectedActor;
+    private boolean swapEnabled;
+
+    public GameStage(Batch batch, float boardWidth, float boardHeight, Board board) {
         super(new ExtendViewportWithRightCamera(boardWidth, boardHeight), batch);
+        this.board = board;
+        this.touchPosition = new Vector2();
+        clearSelection();
+        swapEnabled = true;
         init();
     }
 
@@ -25,9 +43,68 @@ public class GameStage extends Stage {
         initGemActors();
     }
 
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        boolean touchDragged = super.touchDragged(screenX, screenY, pointer);
+
+        if (isSwapEnabled()) {
+
+            screenToStageCoordinates(touchPosition.set(screenX, screenY));
+
+            final Actor hitActor = hit(touchPosition.x, touchPosition.y, true);
+            boolean isActorHit = hitActor != null;
+            boolean existSelectedActor = selectedActor != null;
+            if (existSelectedActor && isActorHit && hitActor != selectedActor) {
+                FloatArray swapPositions = board.swap(selectedActor.getX(), selectedActor.getY(), hitActor.getX(), hitActor.getY());
+
+                MoveToAction fromTo = new MoveToAction();
+                fromTo.setPosition(swapPositions.get(0), swapPositions.get(1));
+                fromTo.setDuration(0.2f);
+                final Gem fromGem = (Gem) selectedActor.getUserObject();
+                selectedActor.addAction(sequence(fromTo, run(new Runnable() {
+                    @Override
+                    public void run() {
+                        fromGem.setReady();
+                    }
+                })));
+
+                MoveToAction toFrom = new MoveToAction();
+                toFrom.setPosition(swapPositions.get(2), swapPositions.get(3));
+                toFrom.setDuration(0.2f);
+                final Gem toGem = (Gem) hitActor.getUserObject();
+                hitActor.addAction(sequence(toFrom, run(new Runnable() {
+                    @Override
+                    public void run() {
+                        toGem.setReady();
+                    }
+                })));
+
+                enableSwap();
+                clearSelection();
+                return true;
+            } else {
+                selectedActor = hitActor;
+            }
+            return touchDragged;
+        }
+        return false;
+    }
+
+    private void clearSelection() {
+        selectedActor = null;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        clearSelection();
+        enableSwap();
+        return true;
+    }
+
     private void initGroup() {
         group = new Group();
         addActor(group);
+        group.setTouchable(Touchable.childrenOnly);
         group.setBounds(Constants.INITIAL_X, Constants.INITIAL_Y, Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
     }
 
@@ -37,48 +114,13 @@ public class GameStage extends Stage {
     }
 
     private void initGemActors() {
-        group.addActor(produceGem(0, 0));
-        group.addActor(produceGem(0, 1));
-        group.addActor(produceGem(0, 2));
-        group.addActor(produceGem(0, 3));
-        group.addActor(produceGem(0, 4));
-        group.addActor(produceGem(0, 5));
-        group.addActor(produceGem(0, 6));
-        group.addActor(produceGem(0, 7));
-        group.addActor(produceGem(0, 8));
+        Array<Gem> gems = board.getGems();
 
-        group.addActor(produceGem(0, 8));
-        group.addActor(produceGem(1, 8));
-        group.addActor(produceGem(2, 8));
-        group.addActor(produceGem(3, 8));
-        group.addActor(produceGem(4, 8));
-        group.addActor(produceGem(5, 8));
-        group.addActor(produceGem(6, 8));
-        group.addActor(produceGem(7, 8));
-
-        group.addActor(produceGem(8, 8));
-        group.addActor(produceGem(8, 7));
-        group.addActor(produceGem(8, 6));
-        group.addActor(produceGem(8, 5));
-        group.addActor(produceGem(8, 4));
-        group.addActor(produceGem(8, 3));
-        group.addActor(produceGem(8, 2));
-        group.addActor(produceGem(8, 1));
-
-        group.addActor(produceGem(8, 0));
-        group.addActor(produceGem(7, 0));
-        group.addActor(produceGem(6, 0));
-        group.addActor(produceGem(5, 0));
-        group.addActor(produceGem(4, 0));
-        group.addActor(produceGem(3, 0));
-        group.addActor(produceGem(2, 0));
-        group.addActor(produceGem(1, 0));
-
-        group.addActor(produceGem(5, 3));
-        group.addActor(produceGem(4, 3));
-        group.addActor(produceGem(3, 3));
-        group.addActor(produceGem(2, 6));
-        group.addActor(produceGem(6, 6));
+        for (Gem gem : gems) {
+            GemActor gemActor = new GemActor(gem.getX(), gem.getY(), Constants.GEM_WIDTH, Constants.GEM_HEIGHT);
+            gemActor.setUserObject(gem);
+            group.addActor(gemActor);
+        }
     }
 
     private Actor produceGem(float x, float y) {
@@ -87,5 +129,17 @@ public class GameStage extends Stage {
 
     public void resize(int width, int height) {
         getViewport().update(width, height);
+    }
+
+    private void disableSwap() {
+        swapEnabled = false;
+    }
+
+    private void enableSwap() {
+        swapEnabled = true;
+    }
+
+    private boolean isSwapEnabled() {
+        return swapEnabled;
     }
 }

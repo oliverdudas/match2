@@ -16,7 +16,7 @@ public class BoardActor extends Actor {
     }
 
     private void init() {
-        setTouchable(Touchable.enabled);
+        setTouchable(Touchable.disabled);
     }
 
     @Override

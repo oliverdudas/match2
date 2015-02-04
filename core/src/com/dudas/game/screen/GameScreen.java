@@ -2,12 +2,10 @@ package com.dudas.game.screen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dudas.game.Constants;
 import com.dudas.game.controller.BoardController;
-import com.dudas.game.controller.GameController;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.MainStage;
 
@@ -18,8 +16,6 @@ public class GameScreen extends AbstractGameScreen {
 
     private static final String TAG = GameScreen.class.getName();
 
-    private GameController gameController;
-    private BoardController boardController;
     private MainStage mainStage;
     private GameStage gameStage;
     private boolean paused;
@@ -33,14 +29,14 @@ public class GameScreen extends AbstractGameScreen {
 
         // Do not update game world when paused.
         if (!paused) {
-            gameController.update(deltaTime);
-            boardController.update(deltaTime);
         }
 
         Gdx.gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         mainStage.draw();
+
+        gameStage.act(deltaTime);
         gameStage.draw();
     }
 
@@ -54,10 +50,9 @@ public class GameScreen extends AbstractGameScreen {
     public void show() {
         SpriteBatch batch = new SpriteBatch();
         mainStage = new MainStage(batch);
-        gameStage = new GameStage(batch, Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
-        gameController = new GameController();
-        boardController = new BoardController();
+        gameStage = new GameStage(batch, Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT, new BoardController());
         Gdx.input.setCatchBackKey(true);
+        Gdx.input.setInputProcessor(gameStage);
     }
 
     @Override
