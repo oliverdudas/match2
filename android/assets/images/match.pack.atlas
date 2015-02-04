@@ -1,0 +1,55 @@
+
+match.pack.png
+size: 2048,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+blue_square
+  rotate: false
+  xy: 2, 94
+  size: 90, 90
+  orig: 90, 90
+  offset: 0, 0
+  index: -1
+board
+  rotate: false
+  xy: 2, 186
+  size: 1054, 790
+  orig: 1054, 790
+  offset: 0, 0
+  index: -1
+green_square
+  rotate: false
+  xy: 1058, 886
+  size: 90, 90
+  orig: 90, 90
+  offset: 0, 0
+  index: -1
+orange_square
+  rotate: false
+  xy: 2, 2
+  size: 90, 90
+  orig: 90, 90
+  offset: 0, 0
+  index: -1
+purple_square
+  rotate: false
+  xy: 94, 94
+  size: 90, 90
+  orig: 90, 90
+  offset: 0, 0
+  index: -1
+red_square
+  rotate: false
+  xy: 1058, 794
+  size: 90, 90
+  orig: 90, 90
+  offset: 0, 0
+  index: -1
+yellow_square
+  rotate: false
+  xy: 1150, 886
+  size: 90, 90
+  orig: 90, 90
+  offset: 0, 0
+  index: -1

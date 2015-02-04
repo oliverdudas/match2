@@ -1,4 +1,4 @@
-package com.dudas.game;
+package com.dudas.game.screen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;

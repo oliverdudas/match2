@@ -1,7 +1,10 @@
 package com.dudas.game.stage;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.dudas.game.Constants;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
 
 /**
@@ -9,57 +12,77 @@ import com.dudas.game.util.ExtendViewportWithRightCamera;
  */
 public class GameStage extends Stage {
 
-    public static final int GAME_STAGE_WIDTH = 9;
-    public static final int GAME_STAGE_HEIGHT = 9;
+    private Group group;
 
-    public GameStage(Batch batch) {
-        super(new ExtendViewportWithRightCamera(GAME_STAGE_WIDTH, GAME_STAGE_HEIGHT), batch);
+    public GameStage(Batch batch, float boardWidth, float boardHeight) {
+        super(new ExtendViewportWithRightCamera(boardWidth, boardHeight), batch);
         init();
     }
 
     private void init() {
-        addActor(new PixmapGemActor(0, 0));
-        addActor(new PixmapGemActor(0, 1));
-        addActor(new PixmapGemActor(0, 2));
-        addActor(new PixmapGemActor(0, 3));
-        addActor(new PixmapGemActor(0, 4));
-        addActor(new PixmapGemActor(0, 5));
-        addActor(new PixmapGemActor(0, 6));
-        addActor(new PixmapGemActor(0, 7));
-        addActor(new PixmapGemActor(0, 8));
+        initGroup();
+        initBoardActor();
+        initGemActors();
+    }
 
-        addActor(new PixmapGemActor(0, 8));
-        addActor(new PixmapGemActor(1, 8));
-        addActor(new PixmapGemActor(2, 8));
-        addActor(new PixmapGemActor(3, 8));
-        addActor(new PixmapGemActor(4, 8));
-        addActor(new PixmapGemActor(5, 8));
-        addActor(new PixmapGemActor(6, 8));
-        addActor(new PixmapGemActor(7, 8));
+    private void initGroup() {
+        group = new Group();
+        addActor(group);
+        group.setBounds(Constants.INITIAL_X, Constants.INITIAL_Y, Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
+    }
 
-        addActor(new PixmapGemActor(8, 8));
-        addActor(new PixmapGemActor(8, 7));
-        addActor(new PixmapGemActor(8, 6));
-        addActor(new PixmapGemActor(8, 5));
-        addActor(new PixmapGemActor(8, 4));
-        addActor(new PixmapGemActor(8, 3));
-        addActor(new PixmapGemActor(8, 2));
-        addActor(new PixmapGemActor(8, 1));
+    private void initBoardActor() {
+        BoardActor boardActor = new BoardActor(Constants.INITIAL_X, Constants.INITIAL_Y, Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
+        group.addActor(boardActor);
+    }
 
-        addActor(new PixmapGemActor(8, 0));
-        addActor(new PixmapGemActor(7, 0));
-        addActor(new PixmapGemActor(6, 0));
-        addActor(new PixmapGemActor(5, 0));
-        addActor(new PixmapGemActor(4, 0));
-        addActor(new PixmapGemActor(3, 0));
-        addActor(new PixmapGemActor(2, 0));
-        addActor(new PixmapGemActor(1, 0));
+    private void initGemActors() {
+        group.addActor(produceGem(0, 0));
+        group.addActor(produceGem(0, 1));
+        group.addActor(produceGem(0, 2));
+        group.addActor(produceGem(0, 3));
+        group.addActor(produceGem(0, 4));
+        group.addActor(produceGem(0, 5));
+        group.addActor(produceGem(0, 6));
+        group.addActor(produceGem(0, 7));
+        group.addActor(produceGem(0, 8));
 
-        addActor(new PixmapGemActor(5, 3));
-        addActor(new PixmapGemActor(4, 3));
-        addActor(new PixmapGemActor(3, 3));
-        addActor(new PixmapGemActor(2, 6));
-        addActor(new PixmapGemActor(6, 6));
+        group.addActor(produceGem(0, 8));
+        group.addActor(produceGem(1, 8));
+        group.addActor(produceGem(2, 8));
+        group.addActor(produceGem(3, 8));
+        group.addActor(produceGem(4, 8));
+        group.addActor(produceGem(5, 8));
+        group.addActor(produceGem(6, 8));
+        group.addActor(produceGem(7, 8));
+
+        group.addActor(produceGem(8, 8));
+        group.addActor(produceGem(8, 7));
+        group.addActor(produceGem(8, 6));
+        group.addActor(produceGem(8, 5));
+        group.addActor(produceGem(8, 4));
+        group.addActor(produceGem(8, 3));
+        group.addActor(produceGem(8, 2));
+        group.addActor(produceGem(8, 1));
+
+        group.addActor(produceGem(8, 0));
+        group.addActor(produceGem(7, 0));
+        group.addActor(produceGem(6, 0));
+        group.addActor(produceGem(5, 0));
+        group.addActor(produceGem(4, 0));
+        group.addActor(produceGem(3, 0));
+        group.addActor(produceGem(2, 0));
+        group.addActor(produceGem(1, 0));
+
+        group.addActor(produceGem(5, 3));
+        group.addActor(produceGem(4, 3));
+        group.addActor(produceGem(3, 3));
+        group.addActor(produceGem(2, 6));
+        group.addActor(produceGem(6, 6));
+    }
+
+    private Actor produceGem(float x, float y) {
+        return new GemActor(x, y, Constants.GEM_WIDTH, Constants.GEM_HEIGHT);
     }
 
     public void resize(int width, int height) {

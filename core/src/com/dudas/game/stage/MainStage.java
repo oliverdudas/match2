@@ -1,9 +1,7 @@
 package com.dudas.game.stage;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 /**
@@ -17,10 +15,7 @@ public class MainStage extends Stage {
     }
 
     private void init() {
-        MainActor actor = new MainActor();
-        actor.setTouchable(Touchable.enabled);
-        addActor(actor);
-        Gdx.input.setInputProcessor(this);
+
     }
 
     public void resize(int width, int height) {
