@@ -2,38 +2,52 @@ package com.dudas.game.stage;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
+import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.Constants;
 import com.dudas.game.Gem;
+import com.dudas.game.event.MatchGameEventManager;
+import com.dudas.game.event.MatchGameListener;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 
 /**
  * Created by foxy on 04/02/2015.
  */
-public class GameStage extends Stage {
+public class GameStage extends Stage implements MatchGameListener {
 
     public static final String TAG = GameStage.class.getName();
+    public static final float SWAP_DURATION = 0.2f;
 
     private Group group;
     private Board board;
     private Vector2 touchPosition;
-    private Actor selectedActor;
+    private GemActor selectedActor;
+    private GemActor hitActor;
     private boolean swapEnabled;
+    private Pool<MoveToAction> moveToActionPool;
+    private Pool<SwapCompleteCallback> swapCompleteCallbackPool;
 
     public GameStage(Batch batch, float boardWidth, float boardHeight, Board board) {
         super(new ExtendViewportWithRightCamera(boardWidth, boardHeight), batch);
         this.board = board;
         this.touchPosition = new Vector2();
-        clearSelection();
-        swapEnabled = true;
+        this.swapEnabled = true;
+        this.moveToActionPool = new Pool<MoveToAction>(){
+            protected MoveToAction newObject(){
+                return new MoveToAction();
+            }
+        };
+        this.swapCompleteCallbackPool = new Pool<SwapCompleteCallback>(){
+            protected SwapCompleteCallback newObject(){
+                return new SwapCompleteCallback();
+            }
+        };
         init();
     }
 
@@ -41,6 +55,7 @@ public class GameStage extends Stage {
         initGroup();
         initBoardActor();
         initGemActors();
+        MatchGameEventManager.setMatchGameProcessor(this);
     }
 
     @Override
@@ -48,39 +63,11 @@ public class GameStage extends Stage {
         boolean touchDragged = super.touchDragged(screenX, screenY, pointer);
 
         if (isSwapEnabled()) {
-
             screenToStageCoordinates(touchPosition.set(screenX, screenY));
-
-            final Actor hitActor = hit(touchPosition.x, touchPosition.y, true);
-            boolean isActorHit = hitActor != null;
-            boolean existSelectedActor = selectedActor != null;
-            if (existSelectedActor && isActorHit && hitActor != selectedActor) {
-                FloatArray swapPositions = board.swap(selectedActor.getX(), selectedActor.getY(), hitActor.getX(), hitActor.getY());
-
-                MoveToAction fromTo = new MoveToAction();
-                fromTo.setPosition(swapPositions.get(0), swapPositions.get(1));
-                fromTo.setDuration(0.2f);
-                final Gem fromGem = (Gem) selectedActor.getUserObject();
-                selectedActor.addAction(sequence(fromTo, run(new Runnable() {
-                    @Override
-                    public void run() {
-                        fromGem.setReady();
-                    }
-                })));
-
-                MoveToAction toFrom = new MoveToAction();
-                toFrom.setPosition(swapPositions.get(2), swapPositions.get(3));
-                toFrom.setDuration(0.2f);
-                final Gem toGem = (Gem) hitActor.getUserObject();
-                hitActor.addAction(sequence(toFrom, run(new Runnable() {
-                    @Override
-                    public void run() {
-                        toGem.setReady();
-                    }
-                })));
-
-                enableSwap();
-                clearSelection();
+            hitActor = (GemActor) hit(touchPosition.x, touchPosition.y, true);
+            if (isSwapPossible()) {
+                disableGemActorSwap();
+                board.swap(selectedActor.getX(), selectedActor.getY(), hitActor.getX(), hitActor.getY());
                 return true;
             } else {
                 selectedActor = hitActor;
@@ -88,6 +75,52 @@ public class GameStage extends Stage {
             return touchDragged;
         }
         return false;
+    }
+
+    private boolean isSwapPossible() {
+        return selectedActor != null && hitActor != null && hitActor != selectedActor && hitActor.isReady() && selectedActor.isReady();
+    }
+
+    @Override
+    public void onSwap(float fromX, float fromY, float toX, float toY) {
+        SwapCompleteCallback swapCompleteCallback = swapCompleteCallbackPool.obtain();
+        swapCompleteCallback.addSwapPair(selectedActor, hitActor);
+        swapCompleteCallback.addBoard(board);
+        handleSwapAction(selectedActor, fromX, fromY);
+        handleSwapAction(hitActor, toX, toY, swapCompleteCallback);
+
+        clearSelection();
+    }
+
+    private void handleSwapAction(final GemActor gemActor, float fromX, float fromY) {
+        handleSwapAction(gemActor, fromX, fromY, null);
+    }
+
+    private void handleSwapAction(final GemActor gemActor, float fromX, float fromY, SwapCompleteCallback swapCompleteCallback) {
+        MoveToAction fromTo = moveToActionPool.obtain();
+        fromTo.setPosition(fromX, fromY);
+        fromTo.setDuration(SWAP_DURATION);
+
+        if (swapCompleteCallback != null) {
+            gemActor.addAction(sequence(fromTo, run(swapCompleteCallback)));
+        } else {
+            gemActor.addAction(fromTo);
+        }
+    }
+
+    @Override
+    public void onClearSuccess(Object eventData) {
+
+    }
+
+    @Override
+    public void onClearFail(Object eventData) {
+
+    }
+
+    @Override
+    public void onFall(Object eventData) {
+
     }
 
     private void clearSelection() {
@@ -117,13 +150,13 @@ public class GameStage extends Stage {
         Array<Gem> gems = board.getGems();
 
         for (Gem gem : gems) {
-            GemActor gemActor = new GemActor(gem.getX(), gem.getY(), Constants.GEM_WIDTH, Constants.GEM_HEIGHT);
+            GemActor gemActor = produceGemActor(gem.getX(), gem.getY());
             gemActor.setUserObject(gem);
             group.addActor(gemActor);
         }
     }
 
-    private Actor produceGem(float x, float y) {
+    private GemActor produceGemActor(float x, float y) {
         return new GemActor(x, y, Constants.GEM_WIDTH, Constants.GEM_HEIGHT);
     }
 
@@ -131,10 +164,16 @@ public class GameStage extends Stage {
         getViewport().update(width, height);
     }
 
-    private void disableSwap() {
+    /**
+     * Prevent continuus swaping with one swipe
+     */
+    private void disableGemActorSwap() {
         swapEnabled = false;
     }
 
+    /**
+     * Enable only one swap with one finger swipe.
+     */
     private void enableSwap() {
         swapEnabled = true;
     }
@@ -142,4 +181,5 @@ public class GameStage extends Stage {
     private boolean isSwapEnabled() {
         return swapEnabled;
     }
+
 }

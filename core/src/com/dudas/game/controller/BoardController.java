@@ -1,10 +1,11 @@
 package com.dudas.game.controller;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
-import com.badlogic.gdx.utils.Predicate;
 import com.dudas.game.Board;
 import com.dudas.game.Gem;
+import com.dudas.game.event.MatchGameEventManager;
 import com.dudas.game.model.GemModel;
 
 /**
@@ -12,7 +13,10 @@ import com.dudas.game.model.GemModel;
  */
 public class BoardController implements Board {
 
+    public static final String TAG = BoardController.class.getName();
+
     private Array<Gem> gems;
+    private Array<Gem> gemsToClear;
 
     public BoardController() {
         init();
@@ -20,6 +24,7 @@ public class BoardController implements Board {
 
     private void init() {
         gems = new Array<Gem>();
+        gemsToClear = new Array<Gem>();
         gems.add(new GemModel(GemModel.GemType.BLUE, 0, 0));
         gems.add(new GemModel(GemModel.GemType.RED, 0, 1));
         gems.add(new GemModel(GemModel.GemType.GREEN, 0, 2));
@@ -108,10 +113,12 @@ public class BoardController implements Board {
         gems.add(new GemModel(GemModel.GemType.RED, 8, 5));
         gems.add(new GemModel(GemModel.GemType.GREEN, 8, 6));
         gems.add(new GemModel(GemModel.GemType.YELLOW, 8, 7));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 8, 8));        
+        gems.add(new GemModel(GemModel.GemType.ORANGE, 8, 8));
     }
 
+    @Override
     public FloatArray swap(float fromX, float fromY, float toX, float toY) {
+//        Gdx.app.debug(TAG, "(" + fromX + ", " + fromY + ") -> (" + toX + ", " + toY + ")");
         Gem fromGem = findGem(fromX, fromY);
         fromGem.block();
         Gem toGem = findGem(toX, toY);
@@ -121,6 +128,7 @@ public class BoardController implements Board {
         fromGem.setY(toY);
         toGem.setX(fromX);
         toGem.setY(fromY);
+        MatchGameEventManager.get().fireSwap(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
         return FloatArray.with(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
     }
 
@@ -133,7 +141,15 @@ public class BoardController implements Board {
         return null;
     }
 
+    @Override
     public Array<Gem> getGems() {
         return gems;
+    }
+
+    @Override
+    public void clear(float fromX, float fromY, float toX, float toY) {
+        gemsToClear.clear();
+//        populateGemsToClear();
+        Gdx.app.debug(TAG, "clear");
     }
 }

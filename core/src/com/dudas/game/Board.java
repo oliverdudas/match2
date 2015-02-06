@@ -11,5 +11,6 @@ public interface Board {
     FloatArray swap(float fromX, float fromY, float toX, float toY);
 
     Array<Gem> getGems();
-    
+
+    void clear(float fromX, float fromY, float toX, float toY);
 }

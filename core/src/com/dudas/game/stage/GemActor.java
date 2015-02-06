@@ -56,4 +56,16 @@ public class GemActor extends Actor {
         }
         throw new RuntimeException("There is no region for gemType: " + type.name());
     }
+
+    public Gem getGem() {
+        return (Gem) getUserObject();
+    }
+
+    public boolean isReady() {
+        return getGem().isReady();
+    }
+
+    public void setReady() {
+        getGem().setReady();
+    }
 }

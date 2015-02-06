@@ -19,7 +19,7 @@ public class GemModel implements Gem {
         this.state = GemState.READY;
     }
 
-    public enum GemState {
+    public enum GemState { // TODO: presunut do Actora?
         READY,
         BLOCKED
     }
