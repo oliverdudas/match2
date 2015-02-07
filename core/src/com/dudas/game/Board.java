@@ -13,4 +13,8 @@ public interface Board {
     Array<Gem> getGems();
 
     void clear(float fromX, float fromY, float toX, float toY);
+
+    float getWidth();
+
+    float getHeight();
 }

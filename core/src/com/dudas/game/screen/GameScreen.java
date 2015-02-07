@@ -50,7 +50,7 @@ public class GameScreen extends AbstractGameScreen {
     public void show() {
         SpriteBatch batch = new SpriteBatch();
         mainStage = new MainStage(batch);
-        gameStage = new GameStage(batch, Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT, new BoardController());
+        gameStage = new GameStage(batch, new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT));
         Gdx.input.setCatchBackKey(true);
         Gdx.input.setInputProcessor(gameStage);
     }

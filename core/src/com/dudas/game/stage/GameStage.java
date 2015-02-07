@@ -33,8 +33,8 @@ public class GameStage extends Stage implements MatchGameListener {
     private Pool<MoveToAction> moveToActionPool;
     private Pool<SwapCompleteCallback> swapCompleteCallbackPool;
 
-    public GameStage(Batch batch, float boardWidth, float boardHeight, Board board) {
-        super(new ExtendViewportWithRightCamera(boardWidth, boardHeight), batch);
+    public GameStage(Batch batch, Board board) {
+        super(new ExtendViewportWithRightCamera(board.getWidth(), board.getHeight()), batch);
         this.board = board;
         this.touchPosition = new Vector2();
         this.swapEnabled = true;
