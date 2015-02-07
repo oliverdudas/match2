@@ -2,6 +2,7 @@ package com.dudas.game;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
+import com.dudas.game.provider.GemsProvider;
 
 /**
  * Created by foxy on 04/02/2015.
@@ -17,4 +18,6 @@ public interface Board {
     float getWidth();
 
     float getHeight();
+
+    void setGemsProvider(GemsProvider provider);
 }

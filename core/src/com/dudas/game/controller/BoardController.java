@@ -7,7 +7,7 @@ import com.badlogic.gdx.utils.IntArray;
 import com.dudas.game.Board;
 import com.dudas.game.Gem;
 import com.dudas.game.event.MatchGameEventManager;
-import com.dudas.game.model.GemModel;
+import com.dudas.game.provider.GemsProvider;
 
 /**
  * Created by foxy on 04/02/2015.
@@ -18,10 +18,10 @@ public class BoardController implements Board {
     public final float width;
     private final float height;
 
-    private Array<Gem> gems;
     private Array<Gem> gemsToClear;
     private IntArray topBorderIndexes;
-    private IntArray rightBorderIndexes;
+    private GemsProvider gemsProvider;
+//    private IntArray rightBorderIndexes;
 
     public BoardController(float width, float height) {
         this.width = width;
@@ -29,100 +29,16 @@ public class BoardController implements Board {
         init();
     }
 
+    public BoardController(float width, float height, GemsProvider provider) {
+        this(width, height);
+        this.gemsProvider = provider;
+    }
+
     private void init() {
-        gems = new Array<Gem>();
         gemsToClear = new Array<Gem>();
         initTopBorderIndexes();
-        initRightBorderIndexes();
-        gems.add(new GemModel(GemModel.GemType.BLUE, 0, 0));
-        gems.add(new GemModel(GemModel.GemType.RED, 0, 1));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 0, 2));
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 0, 3));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 0, 4));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 0, 5));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 0, 6));
-        gems.add(new GemModel(GemModel.GemType.RED, 0, 7));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 0, 8));
+//        initRightBorderIndexes();
 
-        gems.add(new GemModel(GemModel.GemType.BLUE, 1, 0));
-        gems.add(new GemModel(GemModel.GemType.RED, 1, 1));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 1, 2));
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 1, 3));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 1, 4));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 1, 5));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 1, 6));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 1, 7));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 1, 8));
-
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 2, 0));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 2, 1));
-        gems.add(new GemModel(GemModel.GemType.RED, 2, 2));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 2, 3));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 2, 4));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 2, 5));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 2, 6));
-        gems.add(new GemModel(GemModel.GemType.RED, 2, 7));
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 2, 8));
-
-        gems.add(new GemModel(GemModel.GemType.BLUE, 3, 0));
-        gems.add(new GemModel(GemModel.GemType.RED, 3, 1));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 3, 2));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 3, 3));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 3, 4));
-        gems.add(new GemModel(GemModel.GemType.RED, 3, 5));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 3, 6));
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 3, 7));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 3, 8));
-
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 4, 0));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 4, 1));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 4, 2));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 4, 3));
-        gems.add(new GemModel(GemModel.GemType.RED, 4, 4));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 4, 5));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 4, 6));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 4, 7));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 4, 8));
-
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 5, 0));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 5, 1));
-        gems.add(new GemModel(GemModel.GemType.RED, 5, 2));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 5, 3));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 5, 4));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 5, 5));
-        gems.add(new GemModel(GemModel.GemType.RED, 5, 6));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 5, 7));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 5, 8));
-
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 6, 0));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 6, 1));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 6, 2));
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 6, 3));
-        gems.add(new GemModel(GemModel.GemType.RED, 6, 4));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 6, 5));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 6, 6));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 6, 7));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 6, 8));
-
-        gems.add(new GemModel(GemModel.GemType.RED, 7, 0));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 7, 1));
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 7, 2));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 7, 3));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 7, 4));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 7, 5));
-        gems.add(new GemModel(GemModel.GemType.RED, 7, 6));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 7, 7));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 7, 8));
-
-        gems.add(new GemModel(GemModel.GemType.BLUE, 8, 0));
-        gems.add(new GemModel(GemModel.GemType.PURPLE, 8, 1));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 8, 2));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 8, 3));
-        gems.add(new GemModel(GemModel.GemType.BLUE, 8, 4));
-        gems.add(new GemModel(GemModel.GemType.RED, 8, 5));
-        gems.add(new GemModel(GemModel.GemType.GREEN, 8, 6));
-        gems.add(new GemModel(GemModel.GemType.YELLOW, 8, 7));
-        gems.add(new GemModel(GemModel.GemType.ORANGE, 8, 8));
     }
 
     private void initTopBorderIndexes() {
@@ -132,63 +48,65 @@ public class BoardController implements Board {
         }
     }
 
-    private void initRightBorderIndexes() {
-        rightBorderIndexes = new IntArray((int) height);
-        int tilecount = (int) width * (int) height;
-        for (int i = 1; i <= height; i++) {
-            rightBorderIndexes.add(tilecount - i);
-        }
-    }
+//    private void initRightBorderIndexes() {
+//        rightBorderIndexes = new IntArray((int) height);
+//        float tilecount = width * height;
+//        for (int i = 1; i <= height; i++) {
+//            rightBorderIndexes.add((int) tilecount - i);
+//        }
+//    }
 
     @Override
     public FloatArray swap(float fromX, float fromY, float toX, float toY) {
 //        Gdx.app.debug(TAG, "(" + fromX + ", " + fromY + ") -> (" + toX + ", " + toY + ")");
 
+        int fromIndex = createGemBoardIndex(fromX, fromY);
+        int toIndex = createGemBoardIndex(toX, toY);
+        swapSynchronized(fromIndex, toIndex);
 
-        Gem fromGem = findGem(fromX, fromY);
-        fromGem.block();
-        Gem toGem = findGem(toX, toY);
-        toGem.block();
-
-        fromGem.setX(toX);
-        fromGem.setY(toY);
-        toGem.setX(fromX);
-        toGem.setY(fromY);
-        MatchGameEventManager.get().fireSwap(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
-        return FloatArray.with(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
+        MatchGameEventManager.get().fireSwap(toX, toY, fromX, fromY);
+        return FloatArray.with(toX, toY, fromX, fromY);
     }
 
     /**
-     * For now there are only vertical and horizontal moves allowed.
-     * @param fromX
-     * @param fromY
-     * @param toX
-     * @param toY
+     * Swaps indexes in the gems array and also swaps both gems positions
+     *
+     * @param fromIndex index of forst gem to swap
+     * @param toIndex   index of second gem to swap
      */
-    private void moveGemTo(float fromX, float fromY, float toX, float toY) {
-        float boardIndexFrom = createGemBoardIndex(fromX, fromY);
-        float boardIndexTo = createGemBoardIndex(toX, toY);
+    private void swapSynchronized(int fromIndex, int toIndex) {
+        getGems().swap(fromIndex, toIndex);
+        synchronizeGemPosition(fromIndex);
+        synchronizeGemPosition(toIndex);
+    }
 
-        float step;
-        float direction = (boardIndexFrom - boardIndexTo) / Math.abs(boardIndexFrom - boardIndexTo);
-        if ((boardIndexFrom - boardIndexTo) % height == 0) {
-            step = direction * height;
-        } else {
-            step = direction;
+    public void moveGemToTop(float fromX, float fromY) {
+        int boardIndexFrom = createGemBoardIndex(fromX, fromY);
+        moveGemToTop(boardIndexFrom);
+    }
+
+    public void moveGemToTop(int boardIndex) {
+        if (!topBorderIndexes.contains(boardIndex)) {
+            int aboveBoardIndex = boardIndex + 1;
+            swapSynchronized(boardIndex, aboveBoardIndex);
+            moveGemToTop(aboveBoardIndex);
         }
-
-//        float xDirection = (fromX - toX) / Math.abs(fromX - toX);
-//        float yDirection = (fromY - toY) / Math.abs(fromY - toY);
-
-        moveToStep(boardIndexFrom, boardIndexFrom + step);
     }
 
-    private void moveToStep(float fromIndex, float toIndex) {
-
+    private void synchronizeGemPosition(int boardIndex) {
+        findGem(boardIndex).setIndex(boardIndex);
     }
 
-    private float createGemBoardIndex(float x, float y) {
-        return x * width + y;
+    private int createGemBoardIndex(float x, float y) {
+        return (int) (x * width + y);
+    }
+
+    private float createGemBoardPositionX(int index) {
+        return index / width;
+    }
+
+    private float createGemBoardPositionY(int index) {
+        return index % height;
     }
 
     private Gem findGem(float boardIndex) {
@@ -196,26 +114,26 @@ public class BoardController implements Board {
     }
 
     private Gem findGem(int boardIndex) {
-        Gem gem = gems.get(boardIndex);
+        Gem gem = getGems().get(boardIndex);
         if (gem == null) {
             throw new RuntimeException("Gem on boardIndex position doesn't exist!");
         }
         return gem;
     }
 
-    @Deprecated
-    private Gem findGem(float x, float y) {
-        for (Gem gem : gems) {
-            if (gem.getX() == x && gem.getY() == y) {
-                return gem;
-            }
-        }
-        return null;
-    }
+//    @Deprecated
+//    private Gem findGem(float x, float y) {
+//        for (Gem gem : getGems()) {
+//            if (gem.getX() == x && gem.getY() == y) {
+//                return gem;
+//            }
+//        }
+//        return null;
+//    }
 
     @Override
     public Array<Gem> getGems() {
-        return gems;
+        return gemsProvider.getGems(width, height);
     }
 
     @Override
@@ -233,11 +151,16 @@ public class BoardController implements Board {
         return height;
     }
 
+    @Override
+    public void setGemsProvider(GemsProvider provider) {
+        this.gemsProvider = provider;
+    }
+
     public IntArray getTopBorderIndexes() {
         return topBorderIndexes;
     }
 
-    public IntArray getRightBorderIndexes() {
-        return rightBorderIndexes;
-    }
+//    public IntArray getRightBorderIndexes() {
+//        return rightBorderIndexes;
+//    }
 }

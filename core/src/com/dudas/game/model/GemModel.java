@@ -24,15 +24,7 @@ public class GemModel implements Gem {
         BLOCKED
     }
 
-    public enum GemType {
-        RED,
-        GREEN,
-        BLUE,
-        PURPLE,
-        YELLOW,
-        ORANGE,
-        EMPTY
-    }
+
 
     public int getIndex() {
         return (int) (x * 9 + y);
@@ -91,4 +83,13 @@ public class GemModel implements Gem {
         return GemState.BLOCKED.equals(state);
     }
 
+    @Override
+    public String toString() {
+        return "GemModel{" +
+                "x=" + x +
+                ", y=" + y +
+                ", type=" + type.name() +
+                ", state=" + state.name() +
+                '}';
+    }
 }

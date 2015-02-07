@@ -1,6 +1,7 @@
 package com.dudas.game;
 
 import com.dudas.game.model.GemModel;
+import com.dudas.game.model.GemType;
 
 /**
  * Created by foxy on 04/02/2015.
@@ -15,9 +16,13 @@ public interface Gem {
 
     void setY(float y);
 
-    GemModel.GemType getType();
+    int getIndex();
 
-    void setType(GemModel.GemType type);
+    void setIndex(int index);
+
+    GemType getType();
+
+    void setType(GemType type);
 
     GemModel.GemState getState();
 

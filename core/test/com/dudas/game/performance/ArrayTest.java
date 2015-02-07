@@ -3,6 +3,7 @@ package com.dudas.game.performance;
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.Gem;
 import com.dudas.game.model.GemModel;
+import com.dudas.game.model.GemType;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -30,7 +31,7 @@ public class ArrayTest {
     }
 
     private Gem createGem() {
-        return new GemModel(GemModel.GemType.BLUE, 0, 0);
+        return new GemModel(GemType.BLUE, 0, 0);
     }
 
 }

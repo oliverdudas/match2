@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.dudas.game.Gem;
 import com.dudas.game.assets.Assets;
-import com.dudas.game.model.GemModel;
+import com.dudas.game.model.GemType;
 
 /**
  * Created by OLO on 31. 1. 2015
@@ -39,7 +39,7 @@ public class GemActor extends Actor {
         );
     }
 
-    private TextureAtlas.AtlasRegion getRegionByGemType(GemModel.GemType type) {
+    private TextureAtlas.AtlasRegion getRegionByGemType(GemType type) {
         switch (type) {
             case RED:
                 return Assets.instance.assetGems.red;

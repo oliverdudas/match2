@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dudas.game.Constants;
 import com.dudas.game.controller.BoardController;
+import com.dudas.game.provider.TestGemsProvider;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.MainStage;
 
@@ -50,7 +51,8 @@ public class GameScreen extends AbstractGameScreen {
     public void show() {
         SpriteBatch batch = new SpriteBatch();
         mainStage = new MainStage(batch);
-        gameStage = new GameStage(batch, new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT));
+        BoardController board = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT, new TestGemsProvider());
+        gameStage = new GameStage(batch, board);
         Gdx.input.setCatchBackKey(true);
         Gdx.input.setInputProcessor(gameStage);
     }
