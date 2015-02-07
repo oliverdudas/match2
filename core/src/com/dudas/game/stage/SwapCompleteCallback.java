@@ -16,8 +16,8 @@ public class SwapCompleteCallback implements Runnable {
 
     @Override
     public void run() {
-        selectedActor.setReady();
-        swapedActor.setReady();
+//        selectedActor.setReady();
+//        swapedActor.setReady();
         board.clear(selectedActor.getX(), selectedActor.getY(), swapedActor.getX(), swapedActor.getY());
     }
 

@@ -19,6 +19,7 @@ public class GemActor extends Actor {
 
     private void init(float x, float y, float width, float height) {
         setBounds(x, y, width, height);
+        setOrigin(getWidth() * 0.5f, getHeight() * 0.5f);
         setTouchable(Touchable.enabled);
     }
 

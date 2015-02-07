@@ -45,6 +45,14 @@ public class MatchGameEventManager {
         }
     }
 
+    public void fireBackSwap(Gem fromGem, Gem toGem) {
+        if (listeners != null) {
+            for (MatchGameListener listener : listeners) {
+                listener.onBackSwap(fromGem, toGem);
+            }
+        }
+    }
+
     public void fireClearSuccess(Array<Gem> gems) {
         if (listeners != null) {
             for (MatchGameListener listener : listeners) {
@@ -57,6 +65,7 @@ public class MatchGameEventManager {
         if (listeners != null) {
             for (MatchGameListener listener : listeners) {
                 listener.onClearFail(fromX, fromY, toX, toY);
+                break; //hack TODO:
             }
         }
     }

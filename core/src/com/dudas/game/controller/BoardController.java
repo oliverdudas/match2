@@ -154,6 +154,15 @@ public class BoardController implements Board {
         }
     }
 
+    @Override
+    public void backSwap(float fromX, float fromY, float toX, float toY) {
+        int fromIndex = createGemBoardIndex(fromX, fromY);
+        int toIndex = createGemBoardIndex(toX, toY);
+        swapSynchronized(fromIndex, toIndex);
+
+        MatchGameEventManager.get().fireBackSwap(findGem(fromIndex), findGem(toIndex));
+    }
+
     public void moveGemToTop(float fromX, float fromY) {
         int boardIndexFrom = createGemBoardIndex(fromX, fromY);
         moveGemToTop(boardIndexFrom);

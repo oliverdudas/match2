@@ -7,7 +7,9 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
+import com.badlogic.gdx.scenes.scene2d.actions.ScaleToAction;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.Constants;
@@ -23,7 +25,7 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 public class GameStage extends Stage implements MatchGameListener {
 
     public static final String TAG = GameStage.class.getName();
-    public static final float SWAP_DURATION = 0.2f;
+    public static final float ACTION_DURATION = 0.2f;
 
     private Group group;
     private Board board;
@@ -31,22 +33,36 @@ public class GameStage extends Stage implements MatchGameListener {
     private GemActor selectedActor;
     private GemActor hitActor;
     private boolean swapEnabled;
+    private ArrayMap<Gem, GemActor> gemActors;
     private Pool<MoveToAction> moveToActionPool;
+    private Pool<ScaleToAction> scaleToActionPool;
     private Pool<SwapCompleteCallback> swapCompleteCallbackPool;
+    private Pool<ClearCompleteCallback> clearCompleteCallbackPool;
 
     public GameStage(Batch batch, Board board) {
         super(new ExtendViewportWithRightCamera(board.getWidth(), board.getHeight()), batch);
         this.board = board;
         this.touchPosition = new Vector2();
         this.swapEnabled = true;
+        this.gemActors = new ArrayMap<Gem, GemActor>();
         this.moveToActionPool = new Pool<MoveToAction>(){
             protected MoveToAction newObject(){
                 return new MoveToAction();
             }
         };
+        this.scaleToActionPool = new Pool<ScaleToAction>(){
+            protected ScaleToAction newObject(){
+                return new ScaleToAction();
+            }
+        };
         this.swapCompleteCallbackPool = new Pool<SwapCompleteCallback>(){
             protected SwapCompleteCallback newObject(){
                 return new SwapCompleteCallback();
+            }
+        };
+        this.clearCompleteCallbackPool = new Pool<ClearCompleteCallback>(){
+            protected ClearCompleteCallback newObject(){
+                return new ClearCompleteCallback();
             }
         };
         init();
@@ -103,14 +119,14 @@ public class GameStage extends Stage implements MatchGameListener {
         clearSelection();
     }
 
-    private void handleSwapAction(final GemActor gemActor, float fromX, float fromY) {
-        handleSwapAction(gemActor, fromX, fromY, null);
+    private void handleSwapAction(final GemActor gemActor, float x, float y) {
+        handleSwapAction(gemActor, x, y, null);
     }
 
-    private void handleSwapAction(final GemActor gemActor, float fromX, float fromY, SwapCompleteCallback swapCompleteCallback) {
+    private void handleSwapAction(final GemActor gemActor, float x, float y, SwapCompleteCallback swapCompleteCallback) {
         MoveToAction fromTo = moveToActionPool.obtain();
-        fromTo.setPosition(fromX, fromY);
-        fromTo.setDuration(SWAP_DURATION);
+        fromTo.setPosition(x, y);
+        fromTo.setDuration(ACTION_DURATION);
 
         if (swapCompleteCallback != null) {
             gemActor.addAction(sequence(fromTo, run(swapCompleteCallback)));
@@ -120,13 +136,40 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     @Override
+    public void onBackSwap(Gem fromGem, Gem toGem) {
+        GemActor fromActor = gemActors.get(fromGem);
+        GemActor toActor = gemActors.get(toGem);
+
+        // the gem has ben changed in board, now the gemActor must be synchronized
+        handleSwapAction(fromActor, fromGem.getX(), fromGem.getY());
+        handleSwapAction(toActor, toGem.getX(), toGem.getY());
+
+        fromGem.setReady();
+        toGem.setReady();
+    }
+
+    @Override
     public void onClearSuccess(Array<Gem> gems) {
         Gdx.app.debug(TAG, "ClearSuccess(size): " + gems.size);
+        for (final Gem gem : gems) {
+            final GemActor gemActor = gemActors.get(gem);
+
+            ScaleToAction scaleToAction = scaleToActionPool.obtain();
+            scaleToAction.setScale(0);
+            scaleToAction.setDuration(ACTION_DURATION);
+
+            ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
+            clearCompleteCallback.addBoard(board); // TODO: set this only for last gemActor
+            clearCompleteCallback.addGemActor(gemActor);
+
+            gemActor.addAction(sequence(scaleToAction, run(clearCompleteCallback)));
+        }
     }
 
     @Override
     public void onClearFail(float fromX, float fromY, float toX, float toY) {
         Gdx.app.debug(TAG, "ClearFail: (" + fromX + ", " + fromY + ", " + toX + ", " + toY + ")" );
+        board.backSwap(fromX, fromY, toX, toY);
     }
 
     @Override
@@ -163,11 +206,12 @@ public class GameStage extends Stage implements MatchGameListener {
         for (Gem gem : gems) {
             GemActor gemActor = produceGemActor(gem.getX(), gem.getY());
             gemActor.setUserObject(gem);
+            gemActors.put(gem, gemActor);
             group.addActor(gemActor);
         }
     }
 
-    private GemActor produceGemActor(float x, float y) {
+    private GemActor produceGemActor(float x, float y) { // TODO maybe create a provider for grm actors
         return new GemActor(x, y, Constants.GEM_WIDTH, Constants.GEM_HEIGHT);
     }
 

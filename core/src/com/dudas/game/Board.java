@@ -20,4 +20,6 @@ public interface Board {
     float getHeight();
 
     void setGemsProvider(GemsProvider provider);
+
+    void backSwap(float fromX, float fromY, float toX, float toY);
 }
