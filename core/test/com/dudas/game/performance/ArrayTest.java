@@ -26,7 +26,17 @@ public class ArrayTest {
 
     private Array<Gem> createGems() {
         Array<Gem> gemArray = new Array<Gem>();
-        gemArray.addAll(createGem(), createGem(), createGem(), createGem(), createGem(), createGem(), createGem(), createGem(), createGem(), createGem(), createGem());
+        gemArray.addAll(createGem(),
+                createGem(),
+                createGem(),
+                createGem(),
+                createGem(),
+                createGem(),
+                createGem(),
+                createGem(),
+                createGem(),
+                createGem(),
+                createGem());
         return gemArray;
     }
 

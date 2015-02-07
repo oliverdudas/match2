@@ -1,6 +1,5 @@
 package com.dudas.game;
 
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.dudas.game.controller.BoardController;
 import com.dudas.game.model.GemType;
@@ -100,5 +99,21 @@ public class BoardControllerTest {
         assertTrue(0f == newThirdGem.getX());
         assertTrue(2f == newThirdGem.getY());
 
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testDiagonalSwap() throws Exception {
+        Gem firstGem = boardController.getGems().get(0);
+        Gem secondGem = boardController.getGems().get(1);
+
+        assertEquals(GemType.BLUE, firstGem.getType());
+        assertTrue(0f == firstGem.getX());
+        assertTrue(0f == firstGem.getY());
+
+        assertEquals(GemType.RED, secondGem.getType());
+        assertTrue(1f == secondGem.getX());
+        assertTrue(1f == secondGem.getY());
+
+        boardController.swap(0f, 0f, 1f, 1f);
     }
 }

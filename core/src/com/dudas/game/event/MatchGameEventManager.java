@@ -1,6 +1,7 @@
 package com.dudas.game.event;
 
 import com.badlogic.gdx.utils.Array;
+import com.dudas.game.Gem;
 
 /**
  * Created by foxy on 04/02/2015.
@@ -44,10 +45,18 @@ public class MatchGameEventManager {
         }
     }
 
-    public void fireClear(Object eventData) {
+    public void fireClearSuccess(Array<Gem> gems) {
         if (listeners != null) {
             for (MatchGameListener listener : listeners) {
-                listener.onClearSuccess(eventData);
+                listener.onClearSuccess(gems);
+            }
+        }
+    }
+
+    public void fireClearFail(float fromX, float fromY, float toX, float toY) {
+        if (listeners != null) {
+            for (MatchGameListener listener : listeners) {
+                listener.onClearFail(fromX, fromY, toX, toY);
             }
         }
     }

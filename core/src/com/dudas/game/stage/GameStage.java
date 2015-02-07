@@ -1,5 +1,6 @@
 package com.dudas.game.stage;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -78,7 +79,17 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     private boolean isSwapPossible() {
-        return selectedActor != null && hitActor != null && hitActor != selectedActor && hitActor.isReady() && selectedActor.isReady();
+        return selectedActor != null
+                && hitActor != null
+                && hitActor != selectedActor
+                && hitActor.isReady()
+                && selectedActor.isReady()
+                && isVerticalOrHorizontalSwap();
+    }
+
+    private boolean isVerticalOrHorizontalSwap() {
+        return selectedActor.getGem().getX() == hitActor.getGem().getX()
+                || selectedActor.getGem().getY() == hitActor.getGem().getY();
     }
 
     @Override
@@ -109,13 +120,13 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     @Override
-    public void onClearSuccess(Object eventData) {
-
+    public void onClearSuccess(Array<Gem> gems) {
+        Gdx.app.debug(TAG, "ClearSuccess(size): " + gems.size);
     }
 
     @Override
-    public void onClearFail(Object eventData) {
-
+    public void onClearFail(float fromX, float fromY, float toX, float toY) {
+        Gdx.app.debug(TAG, "ClearFail: (" + fromX + ", " + fromY + ", " + toX + ", " + toY + ")" );
     }
 
     @Override
