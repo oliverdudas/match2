@@ -142,10 +142,10 @@ public class GameStage extends Stage implements MatchGameListener {
 
         // the gem has ben changed in board, now the gemActor must be synchronized
         handleSwapAction(fromActor, fromGem.getX(), fromGem.getY());
-        handleSwapAction(toActor, toGem.getX(), toGem.getY());
-
-        fromGem.setReady();
-        toGem.setReady();
+        SwapCompleteCallback swapCompleteCallback = swapCompleteCallbackPool.obtain();
+        swapCompleteCallback.addSwapPair(fromActor, toActor);
+        swapCompleteCallback.setBackSwap(true);
+        handleSwapAction(toActor, toGem.getX(), toGem.getY(), swapCompleteCallback);
     }
 
     @Override
