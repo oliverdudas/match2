@@ -9,7 +9,7 @@ import com.dudas.game.provider.GemsProvider;
  */
 public interface Board {
 
-    FloatArray swap(float fromX, float fromY, float toX, float toY);
+    void swap(float fromX, float fromY, float toX, float toY);
 
     Array<Gem> getGems();
 

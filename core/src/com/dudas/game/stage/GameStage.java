@@ -16,6 +16,7 @@ import com.dudas.game.Constants;
 import com.dudas.game.Gem;
 import com.dudas.game.event.MatchGameEventManager;
 import com.dudas.game.event.MatchGameListener;
+import com.dudas.game.model.GemType;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 
@@ -84,6 +85,8 @@ public class GameStage extends Stage implements MatchGameListener {
             hitActor = (GemActor) hit(touchPosition.x, touchPosition.y, true);
             if (isSwapPossible()) {
                 disableGemActorSwap();
+                selectedActor.block();
+                hitActor.block();
                 board.swap(selectedActor.getX(), selectedActor.getY(), hitActor.getX(), hitActor.getY());
                 return true;
             } else {
@@ -149,25 +152,40 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     @Override
-    public void onClearSuccess(Array<Gem> gems) {
+    public void onClearSuccess(final Array<Gem> gems) {
         Gdx.app.debug(TAG, "ClearSuccess(size): " + gems.size);
         for (int i = 0; i < gems.size; i++) {
             final Gem gem = gems.get(i);
             final GemActor gemActor = gemActors.get(gem);
+            gemActor.block();
 
             ScaleToAction scaleToAction = scaleToActionPool.obtain();
             scaleToAction.setScale(0);
             scaleToAction.setDuration(ACTION_DURATION);
 
-            ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
-            clearCompleteCallback.addGemActor(gemActor);
-            if (i == gems.size - 1) { // only for the last gem
-                clearCompleteCallback.addBoard(board);
-                clearCompleteCallback.addGems(gems);
-            }
+//            ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
+//            clearCompleteCallback.addGemActor(gemActor);
+//            if (i == gems.size - 1) { // only for the last gem
+//                clearCompleteCallback.addBoard(board);
+//                clearCompleteCallback.addGems(gems);
+//            }
+            final boolean last = i == gems.size - 1;
+//
+//            gemActor.addAction(sequence(scaleToAction, run(clearCompleteCallback)));
+            gemActor.addAction(sequence(scaleToAction, run(new Runnable() {
+                @Override
+                public void run() {
+                    gemActor.setVisible(false);
+                    gemActor.setScale(1);
+                    gemActor.getGem().setType(GemType.EMPTY);
 
-            gemActor.addAction(sequence(scaleToAction, run(clearCompleteCallback)));
+                    if (last) {
+                        board.fall(gems);
+                    }
+                }
+            })));
         }
+        String s = "";
     }
 
     @Override
@@ -181,11 +199,22 @@ public class GameStage extends Stage implements MatchGameListener {
         Gdx.app.debug(TAG, "Fall: count: " + gems.size);
         for (Gem gem : gems) {
             GemActor gemActor = gemActors.get(gem);
+
+            if (GemType.EMPTY.equals(gemActor.getType())) {
+                gemActor.setY(getHeight());
+                gemActor.setType(GemType.getRandom());
+                gemActor.setVisible(true);
+            }
+
             MoveToAction moveToAction = moveToActionPool.obtain();
             moveToAction.setPosition(gem.getX(), gem.getY());
             moveToAction.setDuration(ACTION_DURATION);
             gemActor.addAction(moveToAction);
         }
+    }
+
+    private void setEmptyOffsetPosition() {
+
     }
 
     @Override

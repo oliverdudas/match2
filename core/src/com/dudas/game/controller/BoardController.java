@@ -69,7 +69,7 @@ public class BoardController implements Board {
     }
 
     @Override
-    public FloatArray swap(float fromX, float fromY, float toX, float toY) {
+    public void swap(float fromX, float fromY, float toX, float toY) {
 //        Gdx.app.debug(TAG, "(" + fromX + ", " + fromY + ") -> (" + toX + ", " + toY + ")");
         if (fromX != toX && fromY != toY) {
             throw new RuntimeException("Only vertical and horizontal swaps are allowed!");
@@ -80,7 +80,6 @@ public class BoardController implements Board {
         swapSynchronized(fromIndex, toIndex);
 
         MatchGameEventManager.get().fireSwap(toX, toY, fromX, fromY);
-        return FloatArray.with(toX, toY, fromX, fromY);
     }
 
     /**

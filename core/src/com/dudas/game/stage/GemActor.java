@@ -69,4 +69,16 @@ public class GemActor extends Actor {
     public void setReady() {
         getGem().setReady();
     }
+
+    public void block() {
+        getGem().block();
+    }
+
+    public GemType getType() {
+        return getGem().getType();
+    }
+
+    public void setType(GemType type) {
+        getGem().setType(type);
+    }
 }
