@@ -13,7 +13,7 @@ public interface MatchGameListener {
 
     public void onClearFail(float fromX, float fromY, float toX, float toY);
 
-    public void onFall(Object eventData);
+    public void onFall(Array<Gem> gems);
 
     void onBackSwap(Gem fromGem, Gem toGem);
 }

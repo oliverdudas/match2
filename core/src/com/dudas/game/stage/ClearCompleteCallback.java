@@ -1,6 +1,8 @@
 package com.dudas.game.stage;
 
+import com.badlogic.gdx.utils.Array;
 import com.dudas.game.Board;
+import com.dudas.game.Gem;
 import com.dudas.game.model.GemType;
 
 /**
@@ -10,6 +12,7 @@ public class ClearCompleteCallback implements Runnable {
 
     private GemActor gemActor;
     private Board board;
+    private Array<Gem> gems;
 
     public ClearCompleteCallback() {
     }
@@ -20,6 +23,9 @@ public class ClearCompleteCallback implements Runnable {
         gemActor.setScale(1);
         gemActor.getGem().setType(GemType.EMPTY);
 
+        if (board != null && gems != null) {
+            board.fall(gems);
+        }
     }
 
     public void addGemActor(GemActor actor) {
@@ -28,5 +34,9 @@ public class ClearCompleteCallback implements Runnable {
 
     public void addBoard(Board board) {
         this.board = board;
+    }
+
+    public void addGems(Array<Gem> gems) {
+        this.gems = gems;
     }
 }

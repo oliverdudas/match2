@@ -22,9 +22,9 @@ public class TestGemsProvider implements GemsProvider {
             gems.add(new GemModel(GemType.PURPLE, 0, 3));
             gems.add(new GemModel(GemType.YELLOW, 0, 4));
             gems.add(new GemModel(GemType.ORANGE, 0, 5));
-            gems.add(new GemModel(GemType.ORANGE, 0, 6));
-            gems.add(new GemModel(GemType.RED, 0, 7));
-            gems.add(new GemModel(GemType.BLUE, 0, 8));
+            gems.add(new GemModel(GemType.RED, 0, 6));
+            gems.add(new GemModel(GemType.BLUE, 0, 7));
+            gems.add(new GemModel(GemType.ORANGE, 0, 8));
 
             gems.add(new GemModel(GemType.BLUE, 1, 0));
             gems.add(new GemModel(GemType.RED, 1, 1));

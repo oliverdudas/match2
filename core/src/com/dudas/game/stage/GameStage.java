@@ -116,7 +116,7 @@ public class GameStage extends Stage implements MatchGameListener {
         handleSwapAction(selectedActor, fromX, fromY);
         handleSwapAction(hitActor, toX, toY, swapCompleteCallback);
 
-        clearSelection();
+        removeSelection();
     }
 
     private void handleSwapAction(final GemActor gemActor, float x, float y) {
@@ -151,7 +151,8 @@ public class GameStage extends Stage implements MatchGameListener {
     @Override
     public void onClearSuccess(Array<Gem> gems) {
         Gdx.app.debug(TAG, "ClearSuccess(size): " + gems.size);
-        for (final Gem gem : gems) {
+        for (int i = 0; i < gems.size; i++) {
+            final Gem gem = gems.get(i);
             final GemActor gemActor = gemActors.get(gem);
 
             ScaleToAction scaleToAction = scaleToActionPool.obtain();
@@ -159,8 +160,11 @@ public class GameStage extends Stage implements MatchGameListener {
             scaleToAction.setDuration(ACTION_DURATION);
 
             ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
-            clearCompleteCallback.addBoard(board); // TODO: set this only for last gemActor
             clearCompleteCallback.addGemActor(gemActor);
+            if (i == gems.size - 1) { // only for the last gem
+                clearCompleteCallback.addBoard(board);
+                clearCompleteCallback.addGems(gems);
+            }
 
             gemActor.addAction(sequence(scaleToAction, run(clearCompleteCallback)));
         }
@@ -173,19 +177,26 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     @Override
-    public void onFall(Object eventData) {
-
-    }
-
-    private void clearSelection() {
-        selectedActor = null;
+    public void onFall(Array<Gem> gems) {
+        Gdx.app.debug(TAG, "Fall: count: " + gems.size);
+        for (Gem gem : gems) {
+            GemActor gemActor = gemActors.get(gem);
+            MoveToAction moveToAction = moveToActionPool.obtain();
+            moveToAction.setPosition(gem.getX(), gem.getY());
+            moveToAction.setDuration(ACTION_DURATION);
+            gemActor.addAction(moveToAction);
+        }
     }
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        clearSelection();
+        removeSelection();
         enableSwap();
         return true;
+    }
+
+    private void removeSelection() {
+        selectedActor = null;
     }
 
     private void initGroup() {

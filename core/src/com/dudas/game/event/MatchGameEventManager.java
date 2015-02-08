@@ -70,10 +70,10 @@ public class MatchGameEventManager {
         }
     }
 
-    public void fireFall(Object eventData) {
+    public void fireFall(Array<Gem> gems) {
         if (listeners != null) {
             for (MatchGameListener listener : listeners) {
-                listener.onFall(eventData);
+                listener.onFall(gems);
             }
         }
     }

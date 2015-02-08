@@ -22,4 +22,6 @@ public interface Board {
     void setGemsProvider(GemsProvider provider);
 
     void backSwap(float fromX, float fromY, float toX, float toY);
+
+    void fall(Array<Gem> gems);
 }

@@ -1,5 +1,6 @@
 package com.dudas.game.controller;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.IntArray;
@@ -109,7 +110,6 @@ public class BoardController implements Board {
         } else {
             MatchGameEventManager.get().fireClearFail(fromX, fromY, toX, toY);
         }
-        gemArrayPool.free(gems);
     }
 
     private Array<Gem> populateClearGems(float x, float y, Array<Gem> gems, GemType gemType) {
@@ -163,21 +163,40 @@ public class BoardController implements Board {
         MatchGameEventManager.get().fireBackSwap(findGem(fromIndex), findGem(toIndex));
     }
 
-    public void moveGemToTop(float fromX, float fromY) {
-        int boardIndexFrom = createGemBoardIndex(fromX, fromY);
-        moveGemToTop(boardIndexFrom);
+    @Override
+    public void fall(Array<Gem> clearedGems) {
+        Gdx.app.debug(TAG, "Fall called");
+        Array<Gem> fallGems = gemArrayPool.obtain();
+        for (Gem gem : clearedGems) {
+            moveGemToTop(gem.getIndex(), fallGems);
+        }
+        MatchGameEventManager.get().fireFall(fallGems);
+        gemArrayPool.free(fallGems);
+        gemArrayPool.free(clearedGems); // free gems array from clear method TODO: create test for obtaining and freeing
     }
 
-    public void moveGemToTop(int boardIndex) {
+    /**
+     * Moving the gem in its column from original position(0, 1, ..., height)
+     * to top(height). The gem is repeatedly swaped with every above
+     * gem till it reaches the top. So every gem above the first should be
+     * moved below its original position.
+     */
+    public void moveGemToTop(int boardIndex, Array<Gem> fallGems) {
         if (!topBorderIndexes.contains(boardIndex)) {
             int aboveBoardIndex = boardIndex + 1;
+            fallGems.add(findGem(aboveBoardIndex));
             swapSynchronized(boardIndex, aboveBoardIndex);
-            moveGemToTop(aboveBoardIndex);
+            moveGemToTop(aboveBoardIndex, fallGems);
+        } else {
+            Gem synchronizedGem = synchronizeGemPosition(boardIndex);
+            fallGems.add(synchronizedGem);
         }
     }
 
-    private void synchronizeGemPosition(int boardIndex) {
-        findGem(boardIndex).setIndex(boardIndex);
+    private Gem synchronizeGemPosition(int boardIndex) {
+        Gem gem = findGem(boardIndex);
+        gem.setIndex(boardIndex);
+        return gem;
     }
 
     private int createGemBoardIndex(float x, float y) {
