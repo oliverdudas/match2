@@ -1,4 +1,4 @@
-package com.dudas.game.event;
+package com.dudas.game.event.matchgame;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.Gem;
@@ -9,7 +9,7 @@ import com.dudas.game.Gem;
 public interface MatchGameListener {
     public void onSwap(float fromX, float fromY, float toX, float toY);
 
-    public void onClearSuccess(Array<Gem> gems);
+    public void onClearSuccess(Array<Gem> gems, Gem unclearedGem);
 
     public void onClearFail(float fromX, float fromY, float toX, float toY);
 

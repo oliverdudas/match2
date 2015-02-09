@@ -2,12 +2,11 @@ package com.dudas.game.controller;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.Gem;
-import com.dudas.game.event.MatchGameEventManager;
+import com.dudas.game.event.matchgame.MatchGameEventManager;
 import com.dudas.game.model.GemType;
 import com.dudas.game.provider.GemsProvider;
 
@@ -98,17 +97,32 @@ public class BoardController implements Board {
     public void clear(float fromX, float fromY, float toX, float toY) {
         Array<Gem> gems = gemArrayPool.obtain();
 
-        GemType fromType = findGem(createGemBoardIndex(fromX, fromY)).getType();
+        Gem fromGem = findGem(createGemBoardIndex(fromX, fromY));
+        GemType fromType = fromGem.getType();
         populateClearGems(fromX, fromY, gems, fromType);
 
-        GemType toType = findGem(createGemBoardIndex(toX, toY)).getType();
+        Gem toGem = findGem(createGemBoardIndex(toX, toY));
+        GemType toType = toGem.getType();
         populateClearGems(toX, toY, gems, toType);
 
         if (gems.size >= 3) {
-            MatchGameEventManager.get().fireClearSuccess(gems);
+            Gem unclearedGem = resolveUnclearedGem(gems, fromGem, toGem);
+            MatchGameEventManager.get().fireClearSuccess(gems, unclearedGem);
         } else {
             MatchGameEventManager.get().fireClearFail(fromX, fromY, toX, toY);
         }
+    }
+
+    private Gem resolveUnclearedGem(Array<Gem> gems, Gem fromGem, Gem toGem) {
+        Gem unclearedGem; // during swap and clearfinding on from 2 gems must not be cleared
+        if (!gems.contains(fromGem, false)) {
+            unclearedGem = fromGem;
+        } else if (!gems.contains(toGem, false)) {
+            unclearedGem = toGem;
+        } else {
+            unclearedGem = null;
+        }
+        return unclearedGem;
     }
 
     private Array<Gem> populateClearGems(float x, float y, Array<Gem> gems, GemType gemType) {

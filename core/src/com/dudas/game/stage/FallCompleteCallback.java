@@ -6,16 +6,14 @@ import com.dudas.game.model.GemType;
 /**
  * Created by foxy on 06/02/2015.
  */
-public class ClearCompleteCallback implements Runnable {
+public class FallCompleteCallback implements Runnable {
 
     private GemActor gemActor;
-    private Pool<ClearCompleteCallback> pool;
+    private Pool<FallCompleteCallback> pool;
 
     @Override
     public void run() {
-        gemActor.setVisible(false);
-        gemActor.setScale(1);
-        gemActor.getGem().setType(GemType.EMPTY);
+        gemActor.getGem().setReady();
         pool.free(this); // on end of run release this object back to pool
     }
 
@@ -23,7 +21,7 @@ public class ClearCompleteCallback implements Runnable {
         this.gemActor = actor;
     }
 
-    public void addPool(Pool<ClearCompleteCallback> clearCompleteCallbackPool) {
+    public void addPool(Pool<FallCompleteCallback> clearCompleteCallbackPool) {
         this.pool = clearCompleteCallbackPool;
     }
 }

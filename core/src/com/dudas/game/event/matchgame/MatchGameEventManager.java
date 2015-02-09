@@ -1,4 +1,4 @@
-package com.dudas.game.event;
+package com.dudas.game.event.matchgame;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.Gem;
@@ -53,10 +53,10 @@ public class MatchGameEventManager {
         }
     }
 
-    public void fireClearSuccess(Array<Gem> gems) {
+    public void fireClearSuccess(Array<Gem> gems, Gem unclearedGem) {
         if (listeners != null) {
             for (MatchGameListener listener : listeners) {
-                listener.onClearSuccess(gems);
+                listener.onClearSuccess(gems, unclearedGem);
             }
         }
     }

@@ -24,8 +24,6 @@ public class GemModel implements Gem {
         BLOCKED
     }
 
-
-
     public int getIndex() {
         return (int) (x * 9 + y);
     }

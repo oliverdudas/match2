@@ -6,6 +6,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.CountdownEventAction;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.actions.ScaleToAction;
 import com.badlogic.gdx.utils.Array;
@@ -14,8 +16,10 @@ import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.Constants;
 import com.dudas.game.Gem;
-import com.dudas.game.event.MatchGameEventManager;
-import com.dudas.game.event.MatchGameListener;
+import com.dudas.game.event.action.ClearDoneEvent;
+import com.dudas.game.event.action.FireEventAction;
+import com.dudas.game.event.matchgame.MatchGameEventManager;
+import com.dudas.game.event.matchgame.MatchGameListener;
 import com.dudas.game.model.GemType;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
@@ -39,6 +43,7 @@ public class GameStage extends Stage implements MatchGameListener {
     private Pool<ScaleToAction> scaleToActionPool;
     private Pool<SwapCompleteCallback> swapCompleteCallbackPool;
     private Pool<ClearCompleteCallback> clearCompleteCallbackPool;
+    private Pool<FallCompleteCallback> fallCompleteCallbackPool;
 
     public GameStage(Batch batch, Board board) {
         super(new ExtendViewportWithRightCamera(board.getWidth(), board.getHeight()), batch);
@@ -64,6 +69,11 @@ public class GameStage extends Stage implements MatchGameListener {
         this.clearCompleteCallbackPool = new Pool<ClearCompleteCallback>(){
             protected ClearCompleteCallback newObject(){
                 return new ClearCompleteCallback();
+            }
+        };
+        this.fallCompleteCallbackPool = new Pool<FallCompleteCallback>(){
+            protected FallCompleteCallback newObject(){
+                return new FallCompleteCallback();
             }
         };
         init();
@@ -152,40 +162,44 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     @Override
-    public void onClearSuccess(final Array<Gem> gems) {
+    public void onClearSuccess(final Array<Gem> gems, Gem unclearedGem) {
         Gdx.app.debug(TAG, "ClearSuccess(size): " + gems.size);
-        for (int i = 0; i < gems.size; i++) {
-            final Gem gem = gems.get(i);
-            final GemActor gemActor = gemActors.get(gem);
-            gemActor.block();
 
-            ScaleToAction scaleToAction = scaleToActionPool.obtain();
-            scaleToAction.setScale(0);
-            scaleToAction.setDuration(ACTION_DURATION);
+        if (unclearedGem != null) {
+            gemActors.get(unclearedGem).setReady();
+        }
 
-//            ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
-//            clearCompleteCallback.addGemActor(gemActor);
-//            if (i == gems.size - 1) { // only for the last gem
-//                clearCompleteCallback.addBoard(board);
-//                clearCompleteCallback.addGems(gems);
-//            }
-            final boolean last = i == gems.size - 1;
-//
-//            gemActor.addAction(sequence(scaleToAction, run(clearCompleteCallback)));
-            gemActor.addAction(sequence(scaleToAction, run(new Runnable() {
-                @Override
-                public void run() {
-                    gemActor.setVisible(false);
-                    gemActor.setScale(1);
-                    gemActor.getGem().setType(GemType.EMPTY);
+        CountdownEventAction<ClearDoneEvent> countdownEventAction = new CountdownEventAction<ClearDoneEvent>(ClearDoneEvent.class, gems.size);
+        countdownEventAction.setTarget(group);
+        group.addAction(sequence(Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Gem gem : gems) {
+                            final GemActor gemActor = gemActors.get(gem);
+                            gemActor.block();
 
-                    if (last) {
+                            ScaleToAction scaleToAction = scaleToActionPool.obtain();
+                            scaleToAction.setScale(0);
+                            scaleToAction.setDuration(ACTION_DURATION);
+
+                            ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
+                            clearCompleteCallback.addGemActor(gemActor);
+                            clearCompleteCallback.addPool(clearCompleteCallbackPool);
+                            gemActor.addAction(sequence(
+                                    scaleToAction,
+                                    Actions.run(clearCompleteCallback),
+                                    new FireEventAction(new ClearDoneEvent(gemActor))
+                            ));
+                        }
+                    }
+                }),
+                countdownEventAction,
+                run(new Runnable() {
+                    @Override
+                    public void run() {
                         board.fall(gems);
                     }
-                }
-            })));
-        }
-        String s = "";
+                })));
     }
 
     @Override
@@ -195,25 +209,39 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     @Override
-    public void onFall(Array<Gem> gems) {
+    public void onFall(final Array<Gem> gems) {
         Gdx.app.debug(TAG, "Fall: count: " + gems.size);
-        for (Gem gem : gems) {
-            GemActor gemActor = gemActors.get(gem);
 
-            if (GemType.EMPTY.equals(gemActor.getType())) {
-                gemActor.setY(getHeight());
-                gemActor.setType(GemType.getRandom());
-                gemActor.setVisible(true);
+//        CountdownEventAction<FallDoneEvent> countdownEventAction = new CountdownEventAction<FallDoneEvent>(FallDoneEvent.class, gems.size);
+//        countdownEventAction.setTarget(group);
+        group.addAction(sequence(Actions.run(new Runnable() {
+            @Override
+            public void run() {
+                for (Gem gem : gems) {
+                    GemActor gemActor = gemActors.get(gem);
+
+                    if (GemType.EMPTY.equals(gemActor.getType())) {
+                        gemActor.setY(getHeight());
+                        gemActor.setType(GemType.getRandom());
+                        gemActor.setVisible(true);
+                    }
+
+                    MoveToAction moveToAction = moveToActionPool.obtain();
+                    moveToAction.setPosition(gem.getX(), gem.getY());
+                    moveToAction.setDuration(ACTION_DURATION);
+
+                    FallCompleteCallback fallCompleteCallback = fallCompleteCallbackPool.obtain();
+                    fallCompleteCallback.addGemActor(gemActor);
+                    fallCompleteCallback.addPool(fallCompleteCallbackPool);
+                    gemActor.addAction(sequence(
+                            moveToAction,
+                            Actions.run(fallCompleteCallback)
+//                            ,
+//                            new FireEventAction(new FallDoneEvent(gemActor))
+                    ));
+                }
             }
-
-            MoveToAction moveToAction = moveToActionPool.obtain();
-            moveToAction.setPosition(gem.getX(), gem.getY());
-            moveToAction.setDuration(ACTION_DURATION);
-            gemActor.addAction(moveToAction);
-        }
-    }
-
-    private void setEmptyOffsetPosition() {
+        })));
 
     }
 

@@ -53,13 +53,13 @@ public class GameScreen extends AbstractGameScreen {
         mainStage = new MainStage(batch);
         BoardController board = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT, new TestGemsProvider());
         gameStage = new GameStage(batch, board);
-        Gdx.input.setCatchBackKey(true);
+//        Gdx.input.setCatchBackKey(true);
         Gdx.input.setInputProcessor(gameStage);
     }
 
     @Override
     public void hide() {
-        Gdx.input.setCatchBackKey(false);
+//        Gdx.input.setCatchBackKey(false);
     }
 
     @Override
