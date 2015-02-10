@@ -76,6 +76,7 @@ public class GameScreen extends AbstractGameScreen {
 
     @Override
     public void dispose() {
+        super.dispose();
         mainStage.dispose();
         gameStage.dispose();
     }
