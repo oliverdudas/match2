@@ -103,8 +103,8 @@ public class TestGemsProvider implements GemsProvider {
             gems.add(new GemModel(GemType.BLUE, 8, 4));
             gems.add(new GemModel(GemType.RED, 8, 5));
             gems.add(new GemModel(GemType.GREEN, 8, 6));
-            gems.add(new GemModel(GemType.YELLOW, 8, 7));
-            gems.add(new GemModel(GemType.ORANGE, 8, 8));
+            gems.add(new GemModel(GemType.RED, 8, 7));
+            gems.add(new GemModel(GemType.RED, 8, 8));
         }
         return gems;
     }

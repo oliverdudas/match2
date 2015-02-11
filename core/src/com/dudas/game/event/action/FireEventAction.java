@@ -10,14 +10,15 @@ public class FireEventAction extends Action {
 
     private Event event;
 
-    public FireEventAction(Event event) {
-        this.event = event;
-    }
-
     @Override
     public boolean act(float delta) {
         if (getActor() != null)
             getActor().fire(event);
         return true;
+    }
+
+    public FireEventAction addEvent(Event event) {
+        this.event = event;
+        return this;
     }
 }

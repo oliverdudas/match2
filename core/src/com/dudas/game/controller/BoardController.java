@@ -3,6 +3,7 @@ package com.dudas.game.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.Gem;
@@ -20,6 +21,7 @@ public class BoardController implements Board {
     private final float height;
 
     private Pool<Array<Gem>> gemArrayPool;
+    private Pool<ObjectSet<Gem>> gemSetPool;
     private IntArray topBorderIndexes;
     private GemsProvider gemsProvider;
     private float maxBoardIndex;
@@ -41,6 +43,7 @@ public class BoardController implements Board {
         maxBoardIndex = width * height - 1;
         minBoardIndex = 0;
         initGemArrayPool();
+        initGemSetPool();
         initTopBorderIndexes();
 //        initRightBorderIndexes();
     }
@@ -54,6 +57,21 @@ public class BoardController implements Board {
             @Override
             public Array<Gem> obtain() {
                 Array<Gem> gems = super.obtain();
+                gems.clear();
+                return gems;
+            }
+        };
+    }
+
+    private void initGemSetPool() {
+        this.gemSetPool = new Pool<ObjectSet<Gem>>(){
+            protected ObjectSet<Gem> newObject(){
+                return new ObjectSet<Gem>();
+            }
+
+            @Override
+            public ObjectSet<Gem> obtain() {
+                ObjectSet<Gem> gems = super.obtain();
                 gems.clear();
                 return gems;
             }
@@ -157,8 +175,9 @@ public class BoardController implements Board {
     private Array<Gem> resolveClear(float x, float y, float directionX, float directionY, GemType gemType) {
         float nextX = x + directionX;
         float nextY = y + directionY;
+        boolean hasTheSameDirection = (directionX == 0 && x == nextX) || (directionY == 0 && y == nextY);
         int nextBoardIndex = createGemBoardIndex(nextX, nextY);
-        if (minBoardIndex <= nextBoardIndex && nextBoardIndex <= maxBoardIndex && gemType.equals(findGem(nextBoardIndex).getType())) {
+        if (hasTheSameDirection && minBoardIndex <= nextBoardIndex && nextBoardIndex <= maxBoardIndex && gemType.equals(findGem(nextBoardIndex).getType())) {
             Array<Gem> gemArray = resolveClear(nextX, nextY, directionX, directionY, gemType);
             gemArray.add(findGem(nextBoardIndex));
             return gemArray;
@@ -195,14 +214,18 @@ public class BoardController implements Board {
      * moved below its original position.
      */
     public void moveGemToTop(int boardIndex, Array<Gem> fallGems) {
+        Gem gemToAdd;
         if (!topBorderIndexes.contains(boardIndex)) {
             int aboveBoardIndex = boardIndex + 1;
-            fallGems.add(findGem(aboveBoardIndex));
+            gemToAdd = findGem(aboveBoardIndex);
             swapSynchronized(boardIndex, aboveBoardIndex);
             moveGemToTop(aboveBoardIndex, fallGems);
         } else {
             Gem synchronizedGem = synchronizeGemPosition(boardIndex);
-            fallGems.add(synchronizedGem);
+            gemToAdd = synchronizedGem;
+        }
+        if (!fallGems.contains(gemToAdd, false)) { // maybe a Set would be better, to prevent duplicate items
+            fallGems.add(gemToAdd);
         }
     }
 

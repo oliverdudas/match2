@@ -22,6 +22,10 @@ import com.dudas.game.event.matchgame.MatchGameEventManager;
 import com.dudas.game.event.matchgame.MatchGameListener;
 import com.dudas.game.model.GemType;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
+import com.dudas.game.util.TopBoardOverflowCounter;
+
+import java.util.Comparator;
+
 import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
 
 /**
@@ -44,6 +48,9 @@ public class GameStage extends Stage implements MatchGameListener {
     private Pool<SwapCompleteCallback> swapCompleteCallbackPool;
     private Pool<ClearCompleteCallback> clearCompleteCallbackPool;
     private Pool<FallCompleteCallback> fallCompleteCallbackPool;
+    private Pool<FireEventAction> fireEventPool;
+    private Pool<ClearDoneEvent> clearDoneEventPool;
+    private Comparator<Gem> gemYPositionComparator;
 
     public GameStage(Batch batch, Board board) {
         super(new ExtendViewportWithRightCamera(board.getWidth(), board.getHeight()), batch);
@@ -74,6 +81,22 @@ public class GameStage extends Stage implements MatchGameListener {
         this.fallCompleteCallbackPool = new Pool<FallCompleteCallback>(){
             protected FallCompleteCallback newObject(){
                 return new FallCompleteCallback();
+            }
+        };
+        this.fireEventPool = new Pool<FireEventAction>(){
+            protected FireEventAction newObject(){
+                return new FireEventAction();
+            }
+        };
+        this.clearDoneEventPool = new Pool<ClearDoneEvent>(){
+            protected ClearDoneEvent newObject(){
+                return new ClearDoneEvent();
+            }
+        };
+        this.gemYPositionComparator = new Comparator<Gem>() {
+            @Override
+            public int compare(Gem o1, Gem o2) {
+                return (int) o1.getY() - (int) o2.getY();
             }
         };
         init();
@@ -188,7 +211,7 @@ public class GameStage extends Stage implements MatchGameListener {
                             gemActor.addAction(sequence(
                                     scaleToAction,
                                     Actions.run(clearCompleteCallback),
-                                    new FireEventAction(new ClearDoneEvent(gemActor))
+                                    fireEventPool.obtain().addEvent(clearDoneEventPool.obtain())
                             ));
                         }
                     }
