@@ -14,6 +14,7 @@ public class ClearCompleteCallback extends BasePool<ClearCompleteCallback> imple
     public void run() {
         gemActor.setVisible(false);
         gemActor.setScale(1);
+        gemActor.setRotation(0);
         gemActor.getGem().setType(GemType.EMPTY);
 
         returnToPool(this);

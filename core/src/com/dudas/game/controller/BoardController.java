@@ -203,8 +203,27 @@ public class BoardController implements Board {
             moveGemToTop(gem.getIndex(), fallGems);
         }
         MatchGameEventManager.get().fireFall(fallGems);
-        gemArrayPool.free(fallGems);
         gemArrayPool.free(clearedGems); // free gems array from clear method TODO: create test for obtaining and freeing
+    }
+
+    @Override
+    public void clearFallen(Array<Gem> gems) {
+        Array<Gem> clearGems = gemArrayPool.obtain();
+
+        for (Gem gem : gems) {
+            gem.setReady(); // TODO: maybe this should be done in BoardRenderer somehow
+            populateClearGems(gem.getX(), gem.getY(), clearGems, gem.getType());
+        }
+
+        if (clearGems.size > 2) {
+            MatchGameEventManager.get().fireClearSuccess(clearGems, null);
+            // free celarGems in the pool
+        } else {
+//            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
+            gemArrayPool.free(gems); // setting free fallGems from fall(...)
+            gemArrayPool.free(clearGems);
+        }
+
     }
 
     /**
