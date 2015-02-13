@@ -329,6 +329,7 @@ public class GameStage extends Stage implements MatchGameListener {
             public void run() {
                 for (Gem gem : gems) {
                     GemActor gemActor = gemActors.get(gem);
+                    gemActor.block(); // TODO: test is. If makes clear at bootom of board, no other clear at top(and same x column) of the board can be possible until the bottom clear finishes!
 
                     if (GemType.EMPTY.equals(gemActor.getType())) {
                         float yposAddition = gem.getY() + fallDistances.get((int) gemActor.getX());
