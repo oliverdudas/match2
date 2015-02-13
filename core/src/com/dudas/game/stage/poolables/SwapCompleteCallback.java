@@ -1,20 +1,17 @@
-package com.dudas.game.stage;
+package com.dudas.game.stage.poolables;
 
 import com.dudas.game.Board;
+import com.dudas.game.stage.GemActor;
 
 /**
  * Created by foxy on 06/02/2015.
  */
-public class SwapCompleteCallback implements Runnable {
+public class SwapCompleteCallback extends BasePool<SwapCompleteCallback> implements Runnable {
 
     private Board board;
     private GemActor selectedActor;
     private GemActor swapedActor;
     private boolean backSwap;
-
-    public SwapCompleteCallback() {
-        backSwap = false;
-    }
 
     @Override
     public void run() {
@@ -24,6 +21,8 @@ public class SwapCompleteCallback implements Runnable {
             selectedActor.setReady();
             swapedActor.setReady();
         }
+
+        returnToPool(this);
     }
 
     public void addBoard(Board board) {
@@ -37,5 +36,14 @@ public class SwapCompleteCallback implements Runnable {
 
     public void setBackSwap(boolean backSwap) {
         this.backSwap = backSwap;
+    }
+
+    @Override
+    public void reset() {
+        this.board = null;
+        this.selectedActor = null;
+        this.swapedActor = null;
+        this.backSwap = false;
+        super.reset();
     }
 }

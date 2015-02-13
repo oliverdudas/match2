@@ -25,39 +25,6 @@ public class BoardControllerTest {
     }
 
     @Test
-    public void testTopBorderIndexes() throws Exception {
-        IntArray topBorderIndexes = boardController.getTopBorderIndexes();
-        assertEquals(topBorderIndexes.size, 9);
-
-        assertTrue(topBorderIndexes.contains(8));
-        assertTrue(topBorderIndexes.contains(17));
-        assertTrue(topBorderIndexes.contains(26));
-        assertTrue(topBorderIndexes.contains(35));
-        assertTrue(topBorderIndexes.contains(44));
-        assertTrue(topBorderIndexes.contains(53));
-        assertTrue(topBorderIndexes.contains(62));
-        assertTrue(topBorderIndexes.contains(71));
-        assertTrue(topBorderIndexes.contains(80));
-    }
-
-//    @Test
-//    public void testRightBorderIndexes() throws Exception {
-//        IntArray rightBorderIndexes = boardController.getRightBorderIndexes();
-//        assertEquals(9, rightBorderIndexes.size);
-//
-//        assertTrue(rightBorderIndexes.contains(80));
-//        assertTrue(rightBorderIndexes.contains(79));
-//        assertTrue(rightBorderIndexes.contains(78));
-//        assertTrue(rightBorderIndexes.contains(77));
-//        assertTrue(rightBorderIndexes.contains(76));
-//        assertTrue(rightBorderIndexes.contains(75));
-//        assertTrue(rightBorderIndexes.contains(74));
-//        assertTrue(rightBorderIndexes.contains(73));
-//        assertTrue(rightBorderIndexes.contains(72));
-//    }
-
-
-    @Test
     public void testSwap() throws Exception {
         Gem firstGem = boardController.getGems().get(0);
         Gem secondGem = boardController.getGems().get(1);
@@ -105,7 +72,7 @@ public class BoardControllerTest {
     @Test(expected = RuntimeException.class)
     public void testDiagonalSwap() throws Exception {
         Gem firstGem = boardController.getGems().get(0);
-        Gem secondGem = boardController.getGems().get(1);
+        Gem secondGem = boardController.getGems().get(10);
 
         assertEquals(GemType.BLUE, firstGem.getType());
         assertTrue(0f == firstGem.getX());

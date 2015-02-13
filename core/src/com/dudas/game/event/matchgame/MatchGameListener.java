@@ -7,7 +7,7 @@ import com.dudas.game.Gem;
  * Created by foxy on 04/02/2015.
  */
 public interface MatchGameListener {
-    public void onSwap(float fromX, float fromY, float toX, float toY);
+    public void onSwap(Gem to, Gem from);
 
     public void onClearSuccess(Array<Gem> gems, Gem unclearedGem);
 

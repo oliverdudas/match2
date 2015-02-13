@@ -7,17 +7,21 @@ import com.dudas.game.Gem;
  * Created by foxy on 04/02/2015.
  */
 public class MatchGameEventManager {
-    private static MatchGameEventManager minstance;
+    private static MatchGameEventManager instance;
 
-    Array<MatchGameListener> listeners;
+    private Array<MatchGameListener> listeners;
 
     private MatchGameEventManager() {
         listeners = new Array<MatchGameListener>();
     }
 
     public static MatchGameEventManager get() {
-        if (minstance == null) minstance = new MatchGameEventManager();
-        return minstance;
+        if (instance == null) instance = new MatchGameEventManager();
+        return instance;
+    }
+
+    public static void destroy() {
+        instance = null;
     }
 
     public static void setMatchGameProcessor(MatchGameListener eventListener) {
@@ -37,10 +41,10 @@ public class MatchGameEventManager {
         }
     }
 
-    public void fireSwap(float fromX, float fromY, float toX, float toY) {
+    public void fireSwap(Gem to, Gem from) {
         if (listeners != null) {
             for (MatchGameListener listener : listeners) {
-                listener.onSwap(fromX, fromY, toX, toY);
+                listener.onSwap(to, from);
             }
         }
     }

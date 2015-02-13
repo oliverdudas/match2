@@ -21,4 +21,10 @@ public class FireEventAction extends Action {
         this.event = event;
         return this;
     }
+
+    @Override
+    public void reset() {
+        this.event = null;
+        super.reset();
+    }
 }

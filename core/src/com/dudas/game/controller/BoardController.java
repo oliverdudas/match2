@@ -24,8 +24,8 @@ public class BoardController implements Board {
     private Pool<ObjectSet<Gem>> gemSetPool;
     private IntArray topBorderIndexes;
     private GemsProvider gemsProvider;
-    private float maxBoardIndex;
-    private float minBoardIndex;
+    public float maxBoardIndex;
+    public float minBoardIndex;
 //    private IntArray rightBorderIndexes;
 
     public BoardController(float width, float height) {
@@ -96,7 +96,7 @@ public class BoardController implements Board {
         int toIndex = createGemBoardIndex(toX, toY);
         swapSynchronized(fromIndex, toIndex);
 
-        MatchGameEventManager.get().fireSwap(toX, toY, fromX, fromY);
+        MatchGameEventManager.get().fireSwap(findGem(toIndex), findGem(fromIndex));
     }
 
     /**
@@ -239,7 +239,7 @@ public class BoardController implements Board {
         return (int) (x * width + y);
     }
 
-    private Gem findGem(int boardIndex) {
+    public Gem findGem(int boardIndex) {
         Gem gem = getGems().get(boardIndex);
         if (gem == null) {
             throw new RuntimeException("Gem on boardIndex position doesn't exist!");

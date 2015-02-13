@@ -7,11 +7,11 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.CountdownEventAction;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.actions.ScaleToAction;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.Constants;
@@ -21,12 +21,14 @@ import com.dudas.game.event.action.FireEventAction;
 import com.dudas.game.event.matchgame.MatchGameEventManager;
 import com.dudas.game.event.matchgame.MatchGameListener;
 import com.dudas.game.model.GemType;
+import com.dudas.game.stage.poolables.ClearCompleteCallback;
+import com.dudas.game.stage.poolables.BoardCountDownEventAction;
+import com.dudas.game.stage.poolables.FallCompleteCallback;
+import com.dudas.game.stage.poolables.SwapCompleteCallback;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
-import com.dudas.game.util.TopBoardOverflowCounter;
 
-import java.util.Comparator;
-
-import static com.badlogic.gdx.scenes.scene2d.actions.Actions.*;
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.run;
+import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
 
 /**
  * Created by foxy on 04/02/2015.
@@ -49,8 +51,9 @@ public class GameStage extends Stage implements MatchGameListener {
     private Pool<ClearCompleteCallback> clearCompleteCallbackPool;
     private Pool<FallCompleteCallback> fallCompleteCallbackPool;
     private Pool<FireEventAction> fireEventPool;
+    private Pool<BoardCountDownEventAction> clearDoneCountdownEventActionPool;
     private Pool<ClearDoneEvent> clearDoneEventPool;
-    private Comparator<Gem> gemYPositionComparator;
+    private Pool<IntArray> fallDistancesPool;
 
     public GameStage(Batch batch, Board board) {
         super(new ExtendViewportWithRightCamera(board.getWidth(), board.getHeight()), batch);
@@ -58,45 +61,126 @@ public class GameStage extends Stage implements MatchGameListener {
         this.touchPosition = new Vector2();
         this.swapEnabled = true;
         this.gemActors = new ArrayMap<Gem, GemActor>();
-        this.moveToActionPool = new Pool<MoveToAction>(){
-            protected MoveToAction newObject(){
+        this.moveToActionPool = new Pool<MoveToAction>() {
+            @Override
+            protected MoveToAction newObject() {
                 return new MoveToAction();
             }
+
+            @Override
+            public MoveToAction obtain() {
+                MoveToAction obtain = super.obtain();
+                obtain.setPool(moveToActionPool);
+                return obtain;
+            }
         };
-        this.scaleToActionPool = new Pool<ScaleToAction>(){
-            protected ScaleToAction newObject(){
+        this.scaleToActionPool = new Pool<ScaleToAction>() {
+            @Override
+            protected ScaleToAction newObject() {
                 return new ScaleToAction();
             }
+
+            @Override
+            public ScaleToAction obtain() {
+                ScaleToAction obtain = super.obtain();
+                obtain.setPool(scaleToActionPool);
+                return obtain;
+            }
         };
-        this.swapCompleteCallbackPool = new Pool<SwapCompleteCallback>(){
-            protected SwapCompleteCallback newObject(){
+        this.swapCompleteCallbackPool = new Pool<SwapCompleteCallback>() {
+            @Override
+            protected SwapCompleteCallback newObject() {
                 return new SwapCompleteCallback();
             }
+
+            @Override
+            public SwapCompleteCallback obtain() {
+                SwapCompleteCallback obtain = super.obtain();
+                obtain.setPool(swapCompleteCallbackPool);
+                return obtain;
+            }
         };
-        this.clearCompleteCallbackPool = new Pool<ClearCompleteCallback>(){
-            protected ClearCompleteCallback newObject(){
+        this.clearCompleteCallbackPool = new Pool<ClearCompleteCallback>() {
+            @Override
+            protected ClearCompleteCallback newObject() {
                 return new ClearCompleteCallback();
             }
+
+            @Override
+            public ClearCompleteCallback obtain() {
+                ClearCompleteCallback obtain = super.obtain();
+                obtain.setPool(clearCompleteCallbackPool);
+                return obtain;
+            }
         };
-        this.fallCompleteCallbackPool = new Pool<FallCompleteCallback>(){
-            protected FallCompleteCallback newObject(){
+        this.fallCompleteCallbackPool = new Pool<FallCompleteCallback>() {
+            @Override
+            protected FallCompleteCallback newObject() {
                 return new FallCompleteCallback();
             }
-        };
-        this.fireEventPool = new Pool<FireEventAction>(){
-            protected FireEventAction newObject(){
+
+            @Override
+            public FallCompleteCallback obtain() {
+                FallCompleteCallback obtain = super.obtain();
+                obtain.setPool(fallCompleteCallbackPool);
+                return obtain;
+            }
+        };  // TODO: after implementing check if pooling works fine
+        this.fireEventPool = new Pool<FireEventAction>() {
+            @Override
+            protected FireEventAction newObject() {
                 return new FireEventAction();
             }
-        };
-        this.clearDoneEventPool = new Pool<ClearDoneEvent>(){
-            protected ClearDoneEvent newObject(){
-                return new ClearDoneEvent();
+
+            @Override
+            public FireEventAction obtain() {
+                FireEventAction obtain = super.obtain();
+                obtain.setPool(fireEventPool);
+                return obtain;
             }
         };
-        this.gemYPositionComparator = new Comparator<Gem>() {
+        this.clearDoneCountdownEventActionPool = new Pool<BoardCountDownEventAction>() {
             @Override
-            public int compare(Gem o1, Gem o2) {
-                return (int) o1.getY() - (int) o2.getY();
+            protected BoardCountDownEventAction<ClearDoneEvent> newObject() {
+                return new BoardCountDownEventAction<ClearDoneEvent>(ClearDoneEvent.class);
+            }
+
+            @Override
+            public BoardCountDownEventAction<ClearDoneEvent> obtain() {
+                BoardCountDownEventAction<ClearDoneEvent> obtain = super.obtain();
+                obtain.setPool(clearDoneCountdownEventActionPool);
+                return obtain;
+            }
+        };
+        this.clearDoneEventPool = new Pool<ClearDoneEvent>() {
+            @Override
+            protected ClearDoneEvent newObject() {
+                return new ClearDoneEvent();
+            }
+
+            @Override
+            public ClearDoneEvent obtain() {
+                ClearDoneEvent obtain = super.obtain();
+                obtain.setPool(clearDoneEventPool);
+                return obtain;
+            }
+        };
+        this.fallDistancesPool = new Pool<IntArray>() {
+            protected IntArray newObject() {
+                IntArray intArray = new IntArray(true, (int) getWidth());
+                for (int i = 0; i < getWidth(); i++) {
+                    intArray.add(0);
+                }
+                return intArray;
+            }
+
+            @Override
+            public IntArray obtain() {
+                IntArray distances = super.obtain();
+                for (int i = 0; i < distances.size; i++) {
+                    distances.set(i, 0);
+                }
+                return distances;
             }
         };
         init();
@@ -145,12 +229,14 @@ public class GameStage extends Stage implements MatchGameListener {
     }
 
     @Override
-    public void onSwap(float fromX, float fromY, float toX, float toY) {
+    public void onSwap(Gem to, Gem from) {
         SwapCompleteCallback swapCompleteCallback = swapCompleteCallbackPool.obtain();
-        swapCompleteCallback.addSwapPair(selectedActor, hitActor);
+        GemActor fromActor = gemActors.get(from);
+        GemActor toActor = gemActors.get(to);
+        swapCompleteCallback.addSwapPair(fromActor, toActor);
         swapCompleteCallback.addBoard(board);
-        handleSwapAction(selectedActor, fromX, fromY);
-        handleSwapAction(hitActor, toX, toY, swapCompleteCallback);
+        handleSwapAction(fromActor, from.getX(), from.getY());
+        handleSwapAction(toActor, to.getX(), to.getY(), swapCompleteCallback);
 
         removeSelection();
     }
@@ -192,8 +278,9 @@ public class GameStage extends Stage implements MatchGameListener {
             gemActors.get(unclearedGem).setReady();
         }
 
-        CountdownEventAction<ClearDoneEvent> countdownEventAction = new CountdownEventAction<ClearDoneEvent>(ClearDoneEvent.class, gems.size);
-        countdownEventAction.setTarget(group);
+        BoardCountDownEventAction<ClearDoneEvent> clearDoneEventAction = clearDoneCountdownEventActionPool.obtain();
+        clearDoneEventAction.setCount(gems.size);
+        clearDoneEventAction.setTarget(group);
         group.addAction(sequence(Actions.run(new Runnable() {
                     @Override
                     public void run() {
@@ -207,7 +294,6 @@ public class GameStage extends Stage implements MatchGameListener {
 
                             ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
                             clearCompleteCallback.addGemActor(gemActor);
-                            clearCompleteCallback.addPool(clearCompleteCallbackPool);
                             gemActor.addAction(sequence(
                                     scaleToAction,
                                     Actions.run(clearCompleteCallback),
@@ -216,7 +302,7 @@ public class GameStage extends Stage implements MatchGameListener {
                         }
                     }
                 }),
-                countdownEventAction,
+                clearDoneEventAction,
                 run(new Runnable() {
                     @Override
                     public void run() {
@@ -227,7 +313,7 @@ public class GameStage extends Stage implements MatchGameListener {
 
     @Override
     public void onClearFail(float fromX, float fromY, float toX, float toY) {
-        Gdx.app.debug(TAG, "ClearFail: (" + fromX + ", " + fromY + ", " + toX + ", " + toY + ")" );
+        Gdx.app.debug(TAG, "ClearFail: (" + fromX + ", " + fromY + ", " + toX + ", " + toY + ")");
         board.backSwap(fromX, fromY, toX, toY);
     }
 
@@ -235,7 +321,8 @@ public class GameStage extends Stage implements MatchGameListener {
     public void onFall(final Array<Gem> gems) {
         Gdx.app.debug(TAG, "Fall: count: " + gems.size);
 
-//        CountdownEventAction<FallDoneEvent> countdownEventAction = new CountdownEventAction<FallDoneEvent>(FallDoneEvent.class, gems.size);
+        final IntArray fallDistances = createFallDistanceOfNewGems(gems);
+//        ClearDoneCountdownEventAction<FallDoneEvent> countdownEventAction = new ClearDoneCountdownEventAction<FallDoneEvent>(FallDoneEvent.class, gems.size);
 //        countdownEventAction.setTarget(group);
         group.addAction(sequence(Actions.run(new Runnable() {
             @Override
@@ -244,18 +331,19 @@ public class GameStage extends Stage implements MatchGameListener {
                     GemActor gemActor = gemActors.get(gem);
 
                     if (GemType.EMPTY.equals(gemActor.getType())) {
-                        gemActor.setY(getHeight());
+                        float yposAddition = gem.getY() + fallDistances.get((int) gemActor.getX());
+                        gemActor.setY(yposAddition);
                         gemActor.setType(GemType.getRandom());
                         gemActor.setVisible(true);
                     }
 
                     MoveToAction moveToAction = moveToActionPool.obtain();
                     moveToAction.setPosition(gem.getX(), gem.getY());
-                    moveToAction.setDuration(ACTION_DURATION);
+                    float distanceToFall = gemActor.getY() - gem.getY();
+                    moveToAction.setDuration(ACTION_DURATION * distanceToFall);
 
                     FallCompleteCallback fallCompleteCallback = fallCompleteCallbackPool.obtain();
                     fallCompleteCallback.addGemActor(gemActor);
-                    fallCompleteCallback.addPool(fallCompleteCallbackPool);
                     gemActor.addAction(sequence(
                             moveToAction,
                             Actions.run(fallCompleteCallback)
@@ -266,6 +354,17 @@ public class GameStage extends Stage implements MatchGameListener {
             }
         })));
 
+        fallDistancesPool.free(fallDistances); // release fallDistances back to pool. This isn't necessery to be poolable, because every frame is used only once, but I prefer this solution.
+    }
+
+    private IntArray createFallDistanceOfNewGems(Array<Gem> gems) {
+        IntArray distances = fallDistancesPool.obtain();
+        for (Gem gem : gems) {
+            if (GemType.EMPTY.equals(gem.getType())) {
+                distances.incr((int) gem.getX(), 1);
+            }
+        }
+        return distances;
     }
 
     @Override

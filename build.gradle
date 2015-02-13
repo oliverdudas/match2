@@ -62,7 +62,11 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
 
-        testCompile "junit:junit:+"
+        testCompile "junit:junit:+",
+                    "org.powermock:powermock-core:+",
+                    "org.powermock:powermock-module-junit4:+",
+                    "org.powermock:powermock-api-mockito:+",
+                    "org.easymock:easymock:+"
     }
 }
 

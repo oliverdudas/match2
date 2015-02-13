@@ -2,6 +2,8 @@ package com.dudas.game.screen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.dudas.game.assets.Assets;
 
 /**
  * Created by OLO on 19. 1. 2015

@@ -5,7 +5,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.dudas.game.Constants;
+import com.dudas.game.assets.Assets;
 import com.dudas.game.controller.BoardController;
+import com.dudas.game.event.matchgame.MatchGameEventManager;
 import com.dudas.game.provider.TestGemsProvider;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.MainStage;
@@ -60,6 +62,7 @@ public class GameScreen extends AbstractGameScreen {
     @Override
     public void hide() {
 //        Gdx.input.setCatchBackKey(false);
+        MatchGameEventManager.destroy(); // TODO: remove this terrible singleton !!!
     }
 
     @Override
