@@ -236,7 +236,7 @@ public class GameStage extends Stage implements MatchGameListener {
         swapCompleteCallback.addSwapPair(fromActor, toActor);
         swapCompleteCallback.addBoard(board);
         handleSwapAction(fromActor, from.getX(), from.getY());
-        handleSwapAction(toActor, to.getX(), to.getY(), swapCompleteCallback);
+        handleSwapAction(toActor, to.getX(), to.getY(), swapCompleteCallback); // TODO: refactor with use of CountDownEventAction like onClearSuccess
 
         removeSelection();
     }
