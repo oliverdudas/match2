@@ -48,8 +48,6 @@ public class GameStage extends Stage {
             hitActor = (GemActor) hit(touchPosition.x, touchPosition.y, true);
             if (isSwapPossible()) {
                 disableGemActorSwap();
-                selectedActor.block();
-                hitActor.block();
                 board.swap(selectedActor.getX(), selectedActor.getY(), hitActor.getX(), hitActor.getY());
                 removeSelection();
                 return true;

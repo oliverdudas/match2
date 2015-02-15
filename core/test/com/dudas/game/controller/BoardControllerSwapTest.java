@@ -1,5 +1,6 @@
-package com.dudas.game;
+package com.dudas.game.controller;
 
+import com.dudas.game.Constants;
 import com.dudas.game.controller.BoardController;
 import com.dudas.game.event.matchgame.MatchGameEventManager;
 import com.dudas.game.provider.TestGemsProvider;

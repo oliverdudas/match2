@@ -21,12 +21,10 @@ public class BoardController implements Board {
     private final float height;
 
     private Pool<Array<Gem>> gemArrayPool;
-    private Pool<ObjectSet<Gem>> gemSetPool;
     private IntArray topBorderIndexes;
     private GemsProvider gemsProvider;
     public float maxBoardIndex;
     public float minBoardIndex;
-//    private IntArray rightBorderIndexes;
 
     public BoardController(float width, float height) {
         this.width = width;
@@ -43,7 +41,6 @@ public class BoardController implements Board {
         maxBoardIndex = width * height - 1;
         minBoardIndex = 0;
         initGemArrayPool();
-        initGemSetPool();
         initTopBorderIndexes();
 //        initRightBorderIndexes();
     }
@@ -57,21 +54,6 @@ public class BoardController implements Board {
             @Override
             public Array<Gem> obtain() {
                 Array<Gem> gems = super.obtain();
-                gems.clear();
-                return gems;
-            }
-        };
-    }
-
-    private void initGemSetPool() {
-        this.gemSetPool = new Pool<ObjectSet<Gem>>(){
-            protected ObjectSet<Gem> newObject(){
-                return new ObjectSet<Gem>();
-            }
-
-            @Override
-            public ObjectSet<Gem> obtain() {
-                ObjectSet<Gem> gems = super.obtain();
                 gems.clear();
                 return gems;
             }
@@ -96,7 +78,13 @@ public class BoardController implements Board {
         int toIndex = createGemBoardIndex(toX, toY);
         swapSynchronized(fromIndex, toIndex);
 
-        MatchGameEventManager.get().fireSwap(findGem(toIndex), findGem(fromIndex));
+        Gem toGem = findGem(toIndex);
+        Gem fromGem = findGem(fromIndex);
+
+        toGem.block();
+        fromGem.block();
+
+        MatchGameEventManager.get().fireSwap(toGem, fromGem);
     }
 
     /**

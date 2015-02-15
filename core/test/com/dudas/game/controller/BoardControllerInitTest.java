@@ -1,7 +1,8 @@
-package com.dudas.game;
+package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
+import com.dudas.game.Constants;
 import com.dudas.game.controller.BoardController;
 import com.dudas.game.model.GemType;
 import com.dudas.game.provider.TestGemsProvider;
