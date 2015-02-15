@@ -3,11 +3,10 @@ package com.dudas.game.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.ObjectSet;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
+import com.dudas.game.EventManager;
 import com.dudas.game.Gem;
-import com.dudas.game.event.matchgame.MatchGameEventManager;
 import com.dudas.game.model.GemType;
 import com.dudas.game.provider.GemsProvider;
 
@@ -17,12 +16,15 @@ import com.dudas.game.provider.GemsProvider;
 public class BoardController implements Board {
 
     public static final String TAG = BoardController.class.getName();
+
     public final float width;
     private final float height;
 
+    private EventManager eventManager;
+    private GemsProvider gemsProvider;
+
     private Pool<Array<Gem>> gemArrayPool;
     private IntArray topBorderIndexes;
-    private GemsProvider gemsProvider;
     public float maxBoardIndex;
     public float minBoardIndex;
 
@@ -32,9 +34,10 @@ public class BoardController implements Board {
         init();
     }
 
-    public BoardController(float width, float height, GemsProvider provider) {
+    public BoardController(float width, float height, GemsProvider provider, EventManager eventManager) {
         this(width, height);
         this.gemsProvider = provider;
+        this.eventManager = eventManager;
     }
 
     private void init() {
@@ -84,7 +87,7 @@ public class BoardController implements Board {
         toGem.block();
         fromGem.block();
 
-        MatchGameEventManager.get().fireSwap(toGem, fromGem);
+        eventManager.fireSwap(toGem, fromGem);
     }
 
     /**
@@ -113,9 +116,9 @@ public class BoardController implements Board {
 
         if (gems.size >= 3) {
             Gem unclearedGem = resolveUnclearedGem(gems, fromGem, toGem);
-            MatchGameEventManager.get().fireClearSuccess(gems, unclearedGem);
+            eventManager.fireClearSuccess(gems, unclearedGem);
         } else {
-            MatchGameEventManager.get().fireClearFail(fromX, fromY, toX, toY);
+            eventManager.fireClearFail(fromX, fromY, toX, toY);
         }
     }
 
@@ -180,7 +183,7 @@ public class BoardController implements Board {
         int toIndex = createGemBoardIndex(toX, toY);
         swapSynchronized(fromIndex, toIndex);
 
-        MatchGameEventManager.get().fireBackSwap(findGem(fromIndex), findGem(toIndex));
+        eventManager.fireBackSwap(findGem(fromIndex), findGem(toIndex));
     }
 
     @Override
@@ -190,7 +193,7 @@ public class BoardController implements Board {
         for (Gem gem : clearedGems) {
             moveGemToTop(gem.getIndex(), fallGems);
         }
-        MatchGameEventManager.get().fireFall(fallGems);
+        eventManager.fireFall(fallGems);
         gemArrayPool.free(clearedGems); // free gems array from clear method TODO: create test for obtaining and freeing
     }
 
@@ -204,7 +207,7 @@ public class BoardController implements Board {
         }
 
         if (clearGems.size > 2) {
-            MatchGameEventManager.get().fireClearSuccess(clearGems, null);
+            eventManager.fireClearSuccess(clearGems, null);
             // free celarGems in the pool
         } else {
 //            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
@@ -267,11 +270,6 @@ public class BoardController implements Board {
         return height;
     }
 
-    @Override
-    public void setGemsProvider(GemsProvider provider) {
-        this.gemsProvider = provider;
-    }
-
     public IntArray getTopBorderIndexes() {
         return topBorderIndexes;
     }
@@ -288,6 +286,20 @@ public class BoardController implements Board {
         return findGem((int) boardIndex);
     }
 
+
+    @Override
+    public void setGemsProvider(GemsProvider provider) {
+        this.gemsProvider = provider;
+    }
+
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
+
+    @Override
+    public void setEventProcessor(BoardEventListener matchGameListener) {
+        eventManager.attach(matchGameListener);
+    }
 //    @Deprecated
 //    private Gem findGem(float x, float y) {
 //        for (Gem gem : getGems()) {

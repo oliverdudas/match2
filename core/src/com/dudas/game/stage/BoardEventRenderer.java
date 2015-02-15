@@ -16,7 +16,7 @@ import com.dudas.game.Gem;
 import com.dudas.game.event.action.ClearDoneEvent;
 import com.dudas.game.event.action.FallDoneEvent;
 import com.dudas.game.event.action.FireEventAction;
-import com.dudas.game.event.matchgame.MatchGameListener;
+import com.dudas.game.controller.BoardEventListener;
 import com.dudas.game.model.GemType;
 import com.dudas.game.stage.poolables.BoardCountDownEventAction;
 import com.dudas.game.stage.poolables.ClearCompleteCallback;
@@ -31,7 +31,7 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
 /**
  * Created by OLO on 13. 2. 2015
  */
-public class BoardEventRenderer implements MatchGameListener {
+public class BoardEventRenderer implements BoardEventListener {
 
     public static final String TAG = GameStage.class.getName();
     public static final float ACTION_DURATION = 0.1f;

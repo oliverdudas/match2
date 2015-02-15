@@ -1,19 +1,11 @@
 package com.dudas.game.stage;
 
-import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.utils.Array;
-import com.dudas.game.Gem;
 import com.dudas.game.controller.BoardController;
-import com.dudas.game.model.GemModel;
-import com.dudas.game.model.GemType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import static org.mockito.Mockito.*;
 
 /**
  * Created by OLO on 15. 2. 2015

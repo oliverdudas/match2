@@ -1,44 +1,104 @@
 package com.dudas.game.controller;
 
+import com.badlogic.gdx.utils.Array;
 import com.dudas.game.Constants;
-import com.dudas.game.controller.BoardController;
-import com.dudas.game.event.matchgame.MatchGameEventManager;
+import com.dudas.game.EventManager;
+import com.dudas.game.Gem;
+import com.dudas.game.model.GemModel;
+import com.dudas.game.model.GemType;
 import com.dudas.game.provider.TestGemsProvider;
-import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import static org.powermock.api.mockito.PowerMockito.*;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.reflect.Whitebox;
-import static org.easymock.EasyMock.*;
-import static org.powermock.api.support.membermodification.MemberMatcher.constructor;
-import static org.powermock.api.support.membermodification.MemberModifier.suppress;
 
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
 
 /**
  * Created by foxy on 07/02/2015.
  */
 @RunWith(MockitoJUnitRunner.class)
-//@RunWith(PowerMockRunner.class)
-@PrepareForTest(MatchGameEventManager.class)
 public class BoardControllerSwapTest {
 
-    private BoardController boardController;
+    @Mock
+    private EventManager eventManager;
+
+    private BoardController board;
 
     @Before
     public void setUp() throws Exception {
-        boardController = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
-        boardController.setGemsProvider(new TestGemsProvider());
+        board = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
+        board.setGemsProvider(new TestGemsProvider());
+        board.setEventManager(eventManager);
     }
 
     @Test
     public void testVerticalNeighborSwap() throws Exception {
+        Gem fromGem = board.getGems().get(0); // [0, 0, BLUE]
+        assertEquals(GemType.BLUE, fromGem.getType());
+        Gem toGem = board.getGems().get(1); // [0, 1, RED]
+        assertEquals(GemType.RED, toGem.getType());
 
-//        long start = System.currentTimeMillis();
+        ArgumentCaptor<Gem> fromGemCaptor = ArgumentCaptor.forClass(Gem.class);
+        ArgumentCaptor<Gem> toGemCaptor = ArgumentCaptor.forClass(Gem.class);
+
+        board.swap(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
+
+        verify(eventManager).fireSwap(toGemCaptor.capture(), fromGemCaptor.capture());
+
+        Gem capturedFromGem = fromGemCaptor.getValue();
+        Gem capturedToGem = toGemCaptor.getValue();
+
+        assertEquals(GemType.RED, capturedFromGem.getType());
+        assertTrue(0 == capturedFromGem.getX());
+        assertTrue(0 == capturedFromGem.getY());
+
+        assertEquals(GemType.BLUE, capturedToGem.getType());
+        assertTrue(0 == capturedToGem.getX());
+        assertTrue(1 == capturedToGem.getY());
+    }
+
+    @Test
+    public void testHorizontalNeighborSwap() throws Exception {
+        Gem fromGem = board.getGems().get(2); // [0, 2, GREEN]
+        assertEquals(GemType.GREEN, fromGem.getType());
+        Gem toGem = board.getGems().get(11); // [1, 2, BLUE]
+        assertEquals(GemType.BLUE, toGem.getType());
+
+        ArgumentCaptor<Gem> fromGemCaptor = ArgumentCaptor.forClass(Gem.class);
+        ArgumentCaptor<Gem> toGemCaptor = ArgumentCaptor.forClass(Gem.class);
+
+        board.swap(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
+
+        verify(eventManager).fireSwap(toGemCaptor.capture(), fromGemCaptor.capture());
+
+        Gem capturedFromGem = fromGemCaptor.getValue();
+        Gem capturedToGem = toGemCaptor.getValue();
+
+        assertEquals(GemType.BLUE, capturedFromGem.getType());
+        assertTrue(0 == capturedFromGem.getX());
+        assertTrue(2 == capturedFromGem.getY());
+
+        assertEquals(GemType.GREEN, capturedToGem.getType());
+        assertTrue(1 == capturedToGem.getX());
+        assertTrue(2 == capturedToGem.getY());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void testDiagonalNeighborSwap() throws Exception {
+        Gem fromGem = board.getGems().get(0); // [0, 0, BLUE]
+        assertEquals(GemType.BLUE, fromGem.getType());
+        Gem toGem = board.getGems().get(10); // [1, 1, RED]
+        assertEquals(GemType.RED, toGem.getType());
+
+        board.swap(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
+    }
+
+    //        long start = System.currentTimeMillis();
 //
 //        // Suppress ctor *before* createPartialMock and static mock, or ctor is run.
 //        suppress(constructor(MatchGameEventManager.class));
@@ -55,7 +115,7 @@ public class BoardControllerSwapTest {
 //
 //        replay(mock);
 ////
-//        boardController.swap(4, 3, 4, 4);
+//        board.swap(4, 3, 4, 4);
 ////        UsesLongRunningCtor underTest = new UsesLongRunningCtor();
 ////        assertEquals("Processed data", underTest.transformData());
 ////        long end = System.currentTimeMillis();
@@ -72,7 +132,7 @@ public class BoardControllerSwapTest {
 //        PowerMockito.when(MatchGameEventManager.get()).thenReturn(MatchGameEventManager.get());
 //        MatchGameEventManager mock = Mockito.mock(MatchGameEventManager.class);
 //        Mockito.doNothing().when(mock).fireSwap(4, 3, 4, 4);
-//        boardController.swap(4, 3, 4, 4);
+//        board.swap(4, 3, 4, 4);
 //
 //        PowerMockito.verifyStatic(Mockito.times(1));
 //        Mockito.verify(mock).fireSwap(4, 3, 4, 4);
@@ -102,13 +162,13 @@ public class BoardControllerSwapTest {
 //
 //        Mockito.verify(mock).
 
-    }
+//    }
 
     //    @Test
 //    public void testSwap() throws Exception {
-//        Gem firstGem = boardController.getGems().get(0);
-//        Gem secondGem = boardController.getGems().get(1);
-//        Gem thirdGem = boardController.getGems().get(2);
+//        Gem firstGem = board.getGems().get(0);
+//        Gem secondGem = board.getGems().get(1);
+//        Gem thirdGem = board.getGems().get(2);
 //
 //        assertEquals(GemType.BLUE, firstGem.getType());
 //        assertTrue(0f == firstGem.getX());
@@ -123,26 +183,26 @@ public class BoardControllerSwapTest {
 //        assertTrue(2f == thirdGem.getY());
 //
 //
-//        boardController.swap(0f, 0f, 0f, 1f);
+//        board.swap(0f, 0f, 0f, 1f);
 //
-//        Gem newFirstGem = boardController.getGems().get(0);
+//        Gem newFirstGem = board.getGems().get(0);
 //        assertEquals(GemType.RED, newFirstGem.getType());
 //        assertTrue(0f == newFirstGem.getX());
 //        assertTrue(0f == newFirstGem.getY());
 //
-//        Gem newSecondGem = boardController.getGems().get(1);
+//        Gem newSecondGem = board.getGems().get(1);
 //        assertEquals(GemType.BLUE, newSecondGem.getType());
 //        assertTrue(0f == newSecondGem.getX());
 //        assertTrue(1f == newSecondGem.getY());
 //
-//        boardController.swap(0f, 1f, 0f, 2f);
+//        board.swap(0f, 1f, 0f, 2f);
 //
-//        newSecondGem = boardController.getGems().get(1);
+//        newSecondGem = board.getGems().get(1);
 //        assertEquals(GemType.GREEN, newSecondGem.getType());
 //        assertTrue(0f == newSecondGem.getX());
 //        assertTrue(1f == newSecondGem.getY());
 //
-//        Gem newThirdGem = boardController.getGems().get(2);
+//        Gem newThirdGem = board.getGems().get(2);
 //        assertEquals(GemType.BLUE, newThirdGem.getType());
 //        assertTrue(0f == newThirdGem.getX());
 //        assertTrue(2f == newThirdGem.getY());
@@ -151,8 +211,8 @@ public class BoardControllerSwapTest {
 //
 //    @Test(expected = RuntimeException.class)
 //    public void testDiagonalSwap() throws Exception {
-//        Gem firstGem = boardController.getGems().get(0);
-//        Gem secondGem = boardController.getGems().get(10);
+//        Gem firstGem = board.getGems().get(0);
+//        Gem secondGem = board.getGems().get(10);
 //
 //        assertEquals(GemType.BLUE, firstGem.getType());
 //        assertTrue(0f == firstGem.getX());
@@ -162,7 +222,7 @@ public class BoardControllerSwapTest {
 //        assertTrue(1f == secondGem.getX());
 //        assertTrue(1f == secondGem.getY());
 //
-//        boardController.swap(0f, 0f, 1f, 1f);
+//        board.swap(0f, 0f, 1f, 1f);
 //    }
 
 }

@@ -8,8 +8,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.dudas.game.Board;
 import com.dudas.game.Constants;
-import com.dudas.game.event.matchgame.MatchGameEventManager;
-import com.dudas.game.event.matchgame.MatchGameListener;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
 
 /**
@@ -35,7 +33,8 @@ public class GameStage extends Stage {
     private void init() {
         initGroup();
         initBoardActor();
-        MatchGameEventManager.setMatchGameProcessor(new BoardEventRenderer(board, boardGroup));
+//        MatchGameEventManager.setEventProcessor(new BoardEventRenderer(board, boardGroup));
+        board.setEventProcessor(new BoardEventRenderer(board, boardGroup));
         Gdx.input.setInputProcessor(this);
     }
 

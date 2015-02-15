@@ -1,4 +1,4 @@
-package com.dudas.game.event.matchgame;
+package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.Gem;
@@ -6,7 +6,7 @@ import com.dudas.game.Gem;
 /**
  * Created by foxy on 04/02/2015.
  */
-public interface MatchGameListener {
+public interface BoardEventListener {
     public void onSwap(Gem to, Gem from);
 
     public void onClearSuccess(Array<Gem> gems, Gem unclearedGem);
