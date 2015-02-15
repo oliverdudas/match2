@@ -247,7 +247,7 @@ public class BoardEventRenderer implements MatchGameListener {
             gemActors.get(unclearedGem).setReady();
         }
 
-        BoardCountDownEventAction<ClearDoneEvent> clearDoneEventAction = clearDoneCountdownEventActionPool.obtain();
+        final BoardCountDownEventAction<ClearDoneEvent> clearDoneEventAction = clearDoneCountdownEventActionPool.obtain();
         clearDoneEventAction.setCount(gems.size);
         clearDoneEventAction.setTarget(boardGroup);
         boardGroup.addAction(sequence(Actions.run(new Runnable() {
@@ -267,12 +267,17 @@ public class BoardEventRenderer implements MatchGameListener {
 
                             ClearCompleteCallback clearCompleteCallback = clearCompleteCallbackPool.obtain();
                             clearCompleteCallback.addGemActor(gemActor);
+
+                            ClearDoneEvent clearDoneEvent = clearDoneEventPool.obtain();
+                            clearDoneEvent.setTarget(gemActor);
+                            clearDoneEventAction.addEvent(clearDoneEvent);
+
                             gemActor.addAction(
                                     sequence(
                                             scaleToAction1,
                                             scaleToAction2,
                                             Actions.run(clearCompleteCallback),
-                                            fireEventPool.obtain().addEvent(clearDoneEventPool.obtain())
+                                            fireEventPool.obtain().addEvent(clearDoneEvent)
                                     ));
                         }
                     }
@@ -305,7 +310,7 @@ public class BoardEventRenderer implements MatchGameListener {
 
         final IntArray fallDistances = createFallDistanceOfNewGems(gems);
         final IntArray fallDelay = fallDistancesPool.obtain();
-        BoardCountDownEventAction<FallDoneEvent> fallDoneEventAction = new BoardCountDownEventAction<FallDoneEvent>(FallDoneEvent.class);
+        final BoardCountDownEventAction<FallDoneEvent> fallDoneEventAction = new BoardCountDownEventAction<FallDoneEvent>(FallDoneEvent.class);
         fallDoneEventAction.setCount(gems.size);
         fallDoneEventAction.setTarget(boardGroup);
         boardGroup.addAction(sequence(Actions.run(new Runnable() {
@@ -342,12 +347,17 @@ public class BoardEventRenderer implements MatchGameListener {
 
                             FallCompleteCallback fallCompleteCallback = fallCompleteCallbackPool.obtain();
                             fallCompleteCallback.addGemActor(gemActor);
+
+                            FallDoneEvent fallDoneEvent = fallDoneEventPool.obtain();
+                            fallDoneEvent.setTarget(gemActor);
+                            fallDoneEventAction.addEvent(fallDoneEvent);
+
                             gemActor.addAction(sequence(
                                     delayAction,
                                     moveToAction,
                                     fallbackAction,
                                     Actions.run(fallCompleteCallback),
-                                    fireEventPool.obtain().addEvent(fallDoneEventPool.obtain())
+                                    fireEventPool.obtain().addEvent(fallDoneEvent)
                             ));
                         }
                     }

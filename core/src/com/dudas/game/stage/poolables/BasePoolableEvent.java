@@ -18,9 +18,13 @@ public class BasePoolableEvent extends Event {
         this.pool = pool;
     }
 
+    public Pool getPool() {
+        return pool;
+    }
+
     @Override
     public void reset() {
         setPool(null);
-//        super.reset();
+//        super.reset(); TODO: when it is uncomment it crashes in Action.notify !!! check this
     }
 }
