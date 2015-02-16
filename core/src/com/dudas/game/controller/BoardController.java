@@ -49,8 +49,8 @@ public class BoardController implements Board {
     }
 
     private void initGemArrayPool() {
-        this.gemArrayPool = new Pool<Array<Gem>>(){
-            protected Array<Gem> newObject(){
+        this.gemArrayPool = new Pool<Array<Gem>>() {
+            protected Array<Gem> newObject() {
                 return new Array<Gem>();
             }
 
@@ -85,15 +85,6 @@ public class BoardController implements Board {
         fromGem.block();
 
         eventManager.fireSwap(toGem, fromGem);
-    }
-
-    private void checkNeighborCoordinates(float fromX, float fromY, float toX, float toY) {
-        int fromIndex = createGemBoardIndex(fromX, fromY);
-        int toIndex = createGemBoardIndex(toX, toY);
-        IntArray neighborIndexes = getNeighborIndexes(fromIndex);
-        if (!neighborIndexes.contains(toIndex)) {
-            throw new NeighborException();
-        }
     }
 
     /**
@@ -170,17 +161,21 @@ public class BoardController implements Board {
     }
 
     private Array<Gem> resolveClear(float x, float y, float directionX, float directionY, GemType gemType) {
+        int actualBoardIndex = createGemBoardIndex(x, y);
         float nextX = x + directionX;
         float nextY = y + directionY;
-        boolean hasTheSameDirection = (directionX == 0 && x == nextX) || (directionY == 0 && y == nextY);
         int nextBoardIndex = createGemBoardIndex(nextX, nextY);
-        if (hasTheSameDirection && minBoardIndex <= nextBoardIndex && nextBoardIndex <= maxBoardIndex && gemType.equals(findGem(nextBoardIndex).getType())) {
+        if (areNeighborIndexes(actualBoardIndex, nextBoardIndex) && areTheSameType(gemType, findGem(nextBoardIndex).getType())) {
             Array<Gem> gemArray = resolveClear(nextX, nextY, directionX, directionY, gemType);
             gemArray.add(findGem(nextBoardIndex));
             return gemArray;
         } else {
             return gemArrayPool.obtain();
         }
+    }
+
+    private boolean areTheSameType(GemType gemType, GemType type) {
+        return gemType.equals(type);
     }
 
     @Override
@@ -364,5 +359,19 @@ public class BoardController implements Board {
         return index >= minBoardIndex && index <= maxBoardIndex;
     }
 
+    private void checkNeighborCoordinates(float fromX, float fromY, float toX, float toY) {
+        if (!areNeighborCoordinates(fromX, fromY, toX, toY)) {
+            throw new NeighborException();
+        }
+    }
 
+    private boolean areNeighborCoordinates(float fromX, float fromY, float toX, float toY) {
+        int fromIndex = createGemBoardIndex(fromX, fromY);
+        int toIndex = createGemBoardIndex(toX, toY);
+        return areNeighborIndexes(fromIndex, toIndex);
+    }
+
+    private boolean areNeighborIndexes(int fromIndex, int toIndex) {
+        return isValidIndex(fromIndex) && isValidIndex(toIndex) && getNeighborIndexes(fromIndex).contains(toIndex);
+    }
 }
