@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.dudas.game.Board;
 import com.dudas.game.Constants;
+import com.dudas.game.exception.BoardException;
 import com.dudas.game.util.ExtendViewportWithRightCamera;
 
 /**
@@ -47,7 +48,11 @@ public class GameStage extends Stage {
             hitActor = (GemActor) hit(touchPosition.x, touchPosition.y, true);
             if (isSwapPossible()) {
                 disableGemActorSwap();
-                board.swap(selectedActor.getX(), selectedActor.getY(), hitActor.getX(), hitActor.getY());
+                try {
+                    board.swap(selectedActor.getX(), selectedActor.getY(), hitActor.getX(), hitActor.getY());
+                } catch (BoardException e) {
+                    selectedActor = hitActor;
+                }
                 removeSelection();
                 return true;
             } else {
@@ -63,13 +68,7 @@ public class GameStage extends Stage {
                 && hitActor != null
                 && hitActor != selectedActor
                 && hitActor.isReady()
-                && selectedActor.isReady()
-                && isVerticalOrHorizontalSwap();
-    }
-
-    private boolean isVerticalOrHorizontalSwap() {
-        return selectedActor.getGem().getX() == hitActor.getGem().getX()
-                || selectedActor.getGem().getY() == hitActor.getGem().getY();
+                && selectedActor.isReady();
     }
 
     @Override

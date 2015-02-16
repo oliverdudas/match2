@@ -1,12 +1,12 @@
 package com.dudas.game.controller;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.EventManager;
 import com.dudas.game.Gem;
+import com.dudas.game.exception.NeighborException;
 import com.dudas.game.model.GemType;
 import com.dudas.game.provider.GemsProvider;
 
@@ -72,10 +72,7 @@ public class BoardController implements Board {
 
     @Override
     public void swap(float fromX, float fromY, float toX, float toY) {
-//        Gdx.app.debug(TAG, "(" + fromX + ", " + fromY + ") -> (" + toX + ", " + toY + ")");
-        if (fromX != toX && fromY != toY) {
-            throw new RuntimeException("Only vertical and horizontal swaps are allowed!");
-        }
+        checkNeighborCoordinates(fromX, fromY, toX, toY);
 
         int fromIndex = createGemBoardIndex(fromX, fromY);
         int toIndex = createGemBoardIndex(toX, toY);
@@ -88,6 +85,15 @@ public class BoardController implements Board {
         fromGem.block();
 
         eventManager.fireSwap(toGem, fromGem);
+    }
+
+    private void checkNeighborCoordinates(float fromX, float fromY, float toX, float toY) {
+        int fromIndex = createGemBoardIndex(fromX, fromY);
+        int toIndex = createGemBoardIndex(toX, toY);
+        IntArray neighborIndexes = getNeighborIndexes(fromIndex);
+        if (!neighborIndexes.contains(toIndex)) {
+            throw new NeighborException();
+        }
     }
 
     /**
@@ -188,7 +194,6 @@ public class BoardController implements Board {
 
     @Override
     public void fall(Array<Gem> clearedGems) {
-        Gdx.app.debug(TAG, "Fall called");
         Array<Gem> fallGems = gemArrayPool.obtain();
         for (Gem gem : clearedGems) {
             moveGemToTop(gem.getIndex(), fallGems);
@@ -225,7 +230,7 @@ public class BoardController implements Board {
      */
     public void moveGemToTop(int boardIndex, Array<Gem> fallGems) {
         Gem gemToAdd;
-        if (!topBorderIndexes.contains(boardIndex)) {
+        if (isNotTopBoardIndex(boardIndex)) {
             int aboveBoardIndex = boardIndex + 1;
             gemToAdd = findGem(aboveBoardIndex);
             swapSynchronized(boardIndex, aboveBoardIndex);
@@ -321,4 +326,43 @@ public class BoardController implements Board {
 //            rightBorderIndexes.add((int) tilecount - i);
 //        }
 //    }
+
+    private IntArray getNeighborIndexes(int gemIndex) {
+        IntArray neighborIndexes = new IntArray(4);
+        neighborIndexes.add(getRightNeighborIndex(gemIndex));
+        neighborIndexes.add(getBelowNeighborIndex(gemIndex));
+        neighborIndexes.add(getLeftNeighborIndex(gemIndex));
+        neighborIndexes.add(getAboveNeighborIndex(gemIndex));
+        return neighborIndexes;
+    }
+
+    private int getAboveNeighborIndex(int gemIndex) {
+        int above = gemIndex + 1;
+        return isValidIndex(above) && isNotTopBoardIndex(gemIndex) ? above : -1;
+    }
+
+    private int getLeftNeighborIndex(int gemIndex) {
+        int left = gemIndex - (int) height;
+        return isValidIndex(left) ? left : -1;
+    }
+
+    private int getBelowNeighborIndex(int gemIndex) {
+        int below = gemIndex - 1;
+        return isValidIndex(below) && isNotTopBoardIndex(below) ? below : -1;
+    }
+
+    private int getRightNeighborIndex(int gemIndex) {
+        int right = gemIndex + (int) height;
+        return isValidIndex(right) ? right : -1;
+    }
+
+    private boolean isNotTopBoardIndex(int below) {
+        return !topBorderIndexes.contains(below);
+    }
+
+    private boolean isValidIndex(int index) {
+        return index >= minBoardIndex && index <= maxBoardIndex;
+    }
+
+
 }
