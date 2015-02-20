@@ -21,9 +21,5 @@ public interface Board {
 
     void setEventManager(EventManager eventManager);
 
-    void fall(Array<Gem> gems);
-
-    void clearFallen(Array<Gem> gems);
-
     void setEventProcessor(BoardEventListener matchGameListener);
 }

@@ -2,7 +2,6 @@ package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.EventManager;
-import com.dudas.game.Gem;
 
 /**
  * Created by OLO on 15. 2. 2015
@@ -40,10 +39,10 @@ public class BoardEventManager implements EventManager {
         }
     }
 
-    public void fireClearSuccess(Array<Gem> gems, Gem unclearedGem) {
+    public void fireClearSuccess(BoardEvent event) {
         if (listeners != null) {
             for (BoardEventListener listener : listeners) {
-                listener.onClearSuccess(gems, unclearedGem);
+                listener.onClearSuccess(event);
             }
         }
     }
@@ -57,10 +56,10 @@ public class BoardEventManager implements EventManager {
         }
     }
 
-    public void fireFall(Array<Gem> gems) {
+    public void fireFall(BoardEvent event) {
         if (listeners != null) {
             for (BoardEventListener listener : listeners) {
-                listener.onFall(gems);
+                listener.onFall(event);
             }
         }
     }

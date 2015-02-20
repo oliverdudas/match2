@@ -130,7 +130,7 @@ public class BoardController implements Board {
     }
 
     private void clear(final Gem fromGem, final Gem toGem) {
-        Array<Gem> gems = gemArrayPool.obtain();
+        final Array<Gem> gems = gemArrayPool.obtain();
 
         GemType fromType = fromGem.getType();
         populateClearGems(fromGem, gems, fromType);
@@ -139,8 +139,22 @@ public class BoardController implements Board {
         populateClearGems(toGem, gems, toType);
 
         if (gems.size >= 3) {
-            Gem unclearedGem = resolveUnclearedGem(gems, fromGem, toGem);
-            eventManager.fireClearSuccess(gems, unclearedGem);
+            final Gem unclearedGem = resolveUnclearedGem(gems, fromGem, toGem);
+            blockGems(gems);
+            eventManager.fireClearSuccess(new BoardEvent() {
+                @Override
+                public Gem[] getGems() {
+                    return gems.toArray(Gem.class);
+                }
+
+                @Override
+                public void complete() {
+                    if (unclearedGem != null) {
+                        unclearedGem.setReady();
+                    }
+                    fall(gems);
+                }
+            });
         } else {
             eventManager.fireClearFail(new TwoGemsBoardEvent() {
 
@@ -164,6 +178,12 @@ public class BoardController implements Board {
                     backSwap(getFromGem(), getToGem());
                 }
             });
+        }
+    }
+
+    private void blockGems(Array<Gem> gems) {
+        for (Gem gem : gems) {
+            gem.block();
         }
     }
 
@@ -242,7 +262,7 @@ public class BoardController implements Board {
 
             @Override
             public Gem[] getGems() {
-                return new Gem[] {getFromGem(), getToGem()};
+                return new Gem[]{getFromGem(), getToGem()};
             }
 
             @Override
@@ -253,18 +273,27 @@ public class BoardController implements Board {
         });
     }
 
-    public void fall(Array<Gem> clearedGems) {
-        Array<Gem> fallGems = gemArrayPool.obtain();
+    private void fall(Array<Gem> clearedGems) {
+        final Array<Gem> fallGems = gemArrayPool.obtain();
         for (Gem gem : clearedGems) {
             moveGemToTop(gem.getIndex(), fallGems);
         }
-        eventManager.fireFall(fallGems);
+        eventManager.fireFall(new BoardEvent() {
+            @Override
+            public Gem[] getGems() {
+                return fallGems.toArray(Gem.class);
+            }
+
+            @Override
+            public void complete() {
+                clearFallen(fallGems);
+            }
+        });
         gemArrayPool.free(clearedGems); // free gems array from clear method TODO: create test for obtaining and freeing
     }
 
-    @Override
-    public void clearFallen(Array<Gem> gems) {
-        Array<Gem> clearGems = gemArrayPool.obtain();
+    private void clearFallen(Array<Gem> gems) {
+        final Array<Gem> clearGems = gemArrayPool.obtain();
 
         for (Gem gem : gems) {
             gem.setReady(); // TODO: maybe this should be done in BoardRenderer somehow
@@ -272,7 +301,17 @@ public class BoardController implements Board {
         }
 
         if (clearGems.size > 2) {
-            eventManager.fireClearSuccess(clearGems, null);
+            eventManager.fireClearSuccess(new BoardEvent() {
+                @Override
+                public Gem[] getGems() {
+                    return clearGems.toArray(Gem.class);
+                }
+
+                @Override
+                public void complete() {
+                    fall(clearGems);
+                }
+            });
             // free celarGems in the pool
         } else {
 //            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
@@ -288,7 +327,7 @@ public class BoardController implements Board {
      * gem till it reaches the top. So every gem above the first should be
      * moved below its original position.
      */
-    public void moveGemToTop(int gemIndex, Array<Gem> fallGems) {
+    private void moveGemToTop(int gemIndex, Array<Gem> fallGems) {
         int aboveGemIndex = getAboveNeighborIndex(gemIndex);
         if (isValidIndex(gemIndex) && isValidIndex(aboveGemIndex)) {
             swapSynchronized(gemIndex, aboveGemIndex);

@@ -14,11 +14,11 @@ public interface EventManager {
 
     void fireBackSwap(TwoGemsBoardEvent event);
 
-    void fireClearSuccess(Array<Gem> gems, Gem unclearedGem);
+    void fireClearSuccess(BoardEvent event);
 
     void fireClearFail(BoardEvent event);
 
-    void fireFall(Array<Gem> gems);
+    void fireFall(BoardEvent event);
 
     void attach(BoardEventListener eventListener);
 }

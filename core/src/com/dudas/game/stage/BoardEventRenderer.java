@@ -229,20 +229,16 @@ public class BoardEventRenderer implements BoardEventListener {
     }
 
     @Override
-    public void onClearSuccess(final Array<Gem> gems, Gem unclearedGem) {
-        if (unclearedGem != null) {
-            gemActors.get(unclearedGem).setReady();
-        }
-
+    public void onClearSuccess(final BoardEvent event) {
+        final Gem[] gems = event.getGems();
         final BoardCountDownEventAction<ClearDoneEvent> clearDoneEventAction = clearDoneCountdownEventActionPool.obtain();
-        clearDoneEventAction.setCount(gems.size);
+        clearDoneEventAction.setCount(gems.length);
         clearDoneEventAction.setTarget(boardGroup);
         boardGroup.addAction(sequence(Actions.run(new Runnable() {
                     @Override
                     public void run() {
                         for (Gem gem : gems) {
                             final GemActor gemActor = gemActors.get(gem);
-                            gemActor.block();
 
                             ScaleToAction scaleToAction1 = scaleToActionPool.obtain();
                             scaleToAction1.setScale(1.2f);
@@ -273,7 +269,7 @@ public class BoardEventRenderer implements BoardEventListener {
                 run(new Runnable() {
                     @Override
                     public void run() {
-                        board.fall(gems);
+                        event.complete();
                     }
                 })));
     }
@@ -284,7 +280,8 @@ public class BoardEventRenderer implements BoardEventListener {
     }
 
     @Override
-    public void onFall(final Array<Gem> gems) {
+    public void onFall(final BoardEvent event) {
+        final Array<Gem> gems = new Array<Gem>(event.getGems());
         gems.sort(new Comparator<Gem>() {
             @Override
             public int compare(Gem o1, Gem o2) {
@@ -350,7 +347,7 @@ public class BoardEventRenderer implements BoardEventListener {
                 run(new Runnable() {
                     @Override
                     public void run() {
-                        board.clearFallen(gems);
+                        event.complete();
                     }
                 })));
 

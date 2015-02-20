@@ -12,6 +12,7 @@ public class GemModel implements Gem {
     private GemType type;
     private GemState state;
 
+
     public GemModel(GemType type, float x, float y) {
         this.x = x;
         this.y = y;
@@ -19,7 +20,7 @@ public class GemModel implements Gem {
         this.state = GemState.READY;
     }
 
-    public enum GemState { // TODO: presunut do Actora?
+    public enum GemState {
         READY,
         BLOCKED
     }
