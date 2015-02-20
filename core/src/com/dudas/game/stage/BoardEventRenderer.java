@@ -18,7 +18,6 @@ import com.dudas.game.controller.TwoGemsBoardEvent;
 import com.dudas.game.event.action.ClearDoneEvent;
 import com.dudas.game.event.action.FallDoneEvent;
 import com.dudas.game.event.action.FireEventAction;
-import com.dudas.game.model.GemType;
 import com.dudas.game.stage.poolables.BoardCountDownEventAction;
 import com.dudas.game.stage.poolables.ClearCompleteCallback;
 import com.dudas.game.stage.poolables.FallCompleteCallback;
