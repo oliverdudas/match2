@@ -298,13 +298,11 @@ public class BoardEventRenderer implements BoardEventListener {
                     @Override
                     public void run() {
                         for (Gem gem : gems) {
-                            gem.block(); // TODO: test is. If makes clear at bootom of board, no other clear at top(and same x column) of the board can be possible until the bottom clear finishes!
                             GemActor gemActor = gemActors.get(gem);
 
-                            if (GemType.EMPTY.equals(gemActor.getType())) {
+                            if (gem.isNew()) {
                                 float yposAddition = gem.getY() + fallDistances.get((int) gemActor.getX());
                                 gemActor.setY(yposAddition);
-                                gemActor.setType(GemType.getRandom());
                                 gemActor.setVisible(true);
                             }
 
@@ -358,7 +356,7 @@ public class BoardEventRenderer implements BoardEventListener {
     private IntArray createFallDistanceOfNewGems(Array<Gem> gems) {
         IntArray distances = fallDistancesPool.obtain();
         for (Gem gem : gems) {
-            if (GemType.EMPTY.equals(gem.getType())) {
+            if (gem.isNew()) {
                 distances.incr((int) gem.getX(), 1);
             }
         }

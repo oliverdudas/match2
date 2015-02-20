@@ -26,8 +26,6 @@ public interface Gem {
 
     GemModel.GemState getState();
 
-    void setState(GemModel.GemState state);
-
     void block();
 
     void setReady();
@@ -36,4 +34,7 @@ public interface Gem {
 
     boolean isBlocked();
 
+    void setNew(boolean b);
+
+    boolean isNew();
 }

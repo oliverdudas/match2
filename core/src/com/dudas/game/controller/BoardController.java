@@ -273,9 +273,11 @@ public class BoardController implements Board {
         });
     }
 
-    private void fall(Array<Gem> clearedGems) {
+    private void fall(final Array<Gem> clearedGems) {
         final Array<Gem> fallGems = gemArrayPool.obtain();
         for (Gem gem : clearedGems) {
+            gem.setNew(true);
+            gem.setType(GemType.getRandom());
             moveGemToTop(gem.getIndex(), fallGems);
         }
         eventManager.fireFall(new BoardEvent() {
@@ -286,10 +288,16 @@ public class BoardController implements Board {
 
             @Override
             public void complete() {
+                resetNewGems(clearedGems);
                 clearFallen(fallGems);
             }
+
+            private void resetNewGems(Array<Gem> clearedGems) {
+                for (Gem clearedGem : clearedGems) {
+                    clearedGem.setNew(false);
+                }
+            }
         });
-        gemArrayPool.free(clearedGems); // free gems array from clear method TODO: create test for obtaining and freeing
     }
 
     private void clearFallen(Array<Gem> gems) {

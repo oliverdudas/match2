@@ -11,6 +11,7 @@ public class GemModel implements Gem {
     private float y;
     private GemType type;
     private GemState state;
+    private boolean newGem;
 
 
     public GemModel(GemType type, float x, float y) {
@@ -18,6 +19,7 @@ public class GemModel implements Gem {
         this.y = y;
         this.type = type;
         this.state = GemState.READY;
+        this.newGem = false;
     }
 
     public enum GemState {
@@ -80,6 +82,15 @@ public class GemModel implements Gem {
 
     public boolean isBlocked() {
         return GemState.BLOCKED.equals(state);
+    }
+
+    @Override
+    public void setNew(boolean newGem) {
+        this.newGem = newGem;
+    }
+
+    public boolean isNew() {
+        return newGem;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.dudas.game;
 
-import com.badlogic.gdx.utils.Array;
 import com.dudas.game.controller.BoardEvent;
 import com.dudas.game.controller.BoardEventListener;
 import com.dudas.game.controller.TwoGemsBoardEvent;
