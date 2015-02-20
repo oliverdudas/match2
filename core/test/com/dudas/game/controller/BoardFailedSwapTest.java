@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
  * Created by foxy on 07/02/2015.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BoardSwapTest {
+public class BoardFailedSwapTest {
 
     public static final String TESTBOARD_PNG = "testboard.png";
     @Mock
@@ -83,22 +83,22 @@ public class BoardSwapTest {
     }
 
     @Test
-    public void testUpBackSwapFlow() throws Exception {
+    public void testUpNeighborSwapFlow() throws Exception {
         verifyBackSwapFlow(0, 0, GemType.BLUE, 0, 1, GemType.RED);
     }
 
     @Test
-    public void testRightBackSwapFlow() throws Exception {
+    public void testRightNighborSwapFlow() throws Exception {
         verifyBackSwapFlow(1, 0, GemType.BLUE, 2, 0, GemType.YELLOW);
     }
 
     @Test
-    public void testDownBackSwapFlow() throws Exception {
+    public void testDownNighborSwapFlow() throws Exception {
         verifyBackSwapFlow(1, 1, GemType.RED, 1, 0, GemType.BLUE);
     }
 
     @Test
-    public void testLeftSameColorBackSwapFlow() throws Exception {
+    public void testLeftNighborSwapFlow() throws Exception {
         verifyBackSwapFlow(1, 0, GemType.BLUE, 0, 0, GemType.BLUE);
     }
 
