@@ -7,13 +7,13 @@ import com.dudas.game.Gem;
  * Created by foxy on 04/02/2015.
  */
 public interface BoardEventListener {
-    public void onSwap(Gem to, Gem from);
+    public void onSwap(TwoGemsBoardEvent event);
 
     public void onClearSuccess(Array<Gem> gems, Gem unclearedGem);
 
-    public void onClearFail(float fromX, float fromY, float toX, float toY);
+    public void onClearFail(BoardEvent event);
 
     public void onFall(Array<Gem> gems);
 
-    void onBackSwap(Gem fromGem, Gem toGem);
+    void onBackSwap(TwoGemsBoardEvent event);
 }

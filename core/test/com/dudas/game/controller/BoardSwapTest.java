@@ -15,9 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -37,58 +35,6 @@ public class BoardSwapTest {
         board = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
         board.setGemsProvider(new PixmapGemsProvider(TESTBOARD_PNG));
         board.setEventManager(eventManager);
-    }
-
-    @Test
-    public void testVerticalNeighborSwap() throws Exception {
-        Gem fromGem = board.getGems().get(0); // [0, 0, BLUE]
-        assertEquals(GemType.BLUE, fromGem.getType());
-        Gem toGem = board.getGems().get(1); // [0, 1, RED]
-        assertEquals(GemType.RED, toGem.getType());
-
-        ArgumentCaptor<Gem> fromGemCaptor = ArgumentCaptor.forClass(Gem.class);
-        ArgumentCaptor<Gem> toGemCaptor = ArgumentCaptor.forClass(Gem.class);
-
-        board.swap(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
-
-        verify(eventManager).fireSwap(toGemCaptor.capture(), fromGemCaptor.capture());
-
-        Gem capturedFromGem = fromGemCaptor.getValue();
-        Gem capturedToGem = toGemCaptor.getValue();
-
-        assertEquals(GemType.RED, capturedFromGem.getType());
-        assertTrue(0 == capturedFromGem.getX());
-        assertTrue(0 == capturedFromGem.getY());
-
-        assertEquals(GemType.BLUE, capturedToGem.getType());
-        assertTrue(0 == capturedToGem.getX());
-        assertTrue(1 == capturedToGem.getY());
-    }
-
-    @Test
-    public void testHorizontalNeighborSwap() throws Exception {
-        Gem fromGem = board.getGems().get(2); // [0, 2, GREEN]
-        assertEquals(GemType.GREEN, fromGem.getType());
-        Gem toGem = board.getGems().get(11); // [1, 2, BLUE]
-        assertEquals(GemType.BLUE, toGem.getType());
-
-        ArgumentCaptor<Gem> fromGemCaptor = ArgumentCaptor.forClass(Gem.class);
-        ArgumentCaptor<Gem> toGemCaptor = ArgumentCaptor.forClass(Gem.class);
-
-        board.swap(fromGem.getX(), fromGem.getY(), toGem.getX(), toGem.getY());
-
-        verify(eventManager).fireSwap(toGemCaptor.capture(), fromGemCaptor.capture());
-
-        Gem capturedFromGem = fromGemCaptor.getValue();
-        Gem capturedToGem = toGemCaptor.getValue();
-
-        assertEquals(GemType.BLUE, capturedFromGem.getType());
-        assertTrue(0 == capturedFromGem.getX());
-        assertTrue(2 == capturedFromGem.getY());
-
-        assertEquals(GemType.GREEN, capturedToGem.getType());
-        assertTrue(1 == capturedToGem.getX());
-        assertTrue(2 == capturedToGem.getY());
     }
 
     @Test(expected = NeighborException.class)
@@ -137,22 +83,82 @@ public class BoardSwapTest {
     }
 
     @Test
-    public void testSwapBackFlow() throws Exception {
+    public void testUpBackSwapFlow() throws Exception {
+        verifyBackSwapFlow(0, 0, GemType.BLUE, 0, 1, GemType.RED);
+    }
+
+    @Test
+    public void testRightBackSwapFlow() throws Exception {
+        verifyBackSwapFlow(1, 0, GemType.BLUE, 2, 0, GemType.YELLOW);
+    }
+
+    @Test
+    public void testDownBackSwapFlow() throws Exception {
+        verifyBackSwapFlow(1, 1, GemType.RED, 1, 0, GemType.BLUE);
+    }
+
+    @Test
+    public void testLeftSameColorBackSwapFlow() throws Exception {
+        verifyBackSwapFlow(1, 0, GemType.BLUE, 0, 0, GemType.BLUE);
+    }
+
+    private void verifyBackSwapFlow(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
         verifyBoardReady();
-
-        verifyBeforeSwap(0, 0, GemType.BLUE, 0, 1, GemType.RED);
-        board.swap(0, 0, 0, 1);
-        verifySwap(0, 0, GemType.RED, 0, 1, GemType.BLUE);
-        board.clear(0, 1, 0, 0);
-        verifyClearFailed(0, 1, GemType.BLUE, 0, 0, GemType.RED);
-        board.backSwap(0, 1, 0, 0);
-        verifyBackSwap(0, 0, GemType.BLUE, 0, 1, GemType.RED);
-        board.setGemReady(0, 0);
-        board.setGemReady(0, 1);
-
+        board.swap(x1, y1, x2, y2);
+        verifySwapEvent(x1, y1, expectedGemType1, x2, y2, expectedGemType2);
+        verifyClearFailEvent(x1, y1, expectedGemType1, x2, y2, expectedGemType2);
+        verifyBackSwapEvent(x1, y1, expectedGemType1, x2, y2, expectedGemType2);
         verifyBoardReady();
-
         verifyBoard(new PixmapGemsProvider(TESTBOARD_PNG));
+    }
+
+    private void verifyBackSwapEvent(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
+        ArgumentCaptor<TwoGemsBoardEvent> backSwapEventCaptor = ArgumentCaptor.forClass(TwoGemsBoardEvent.class);
+        verify(eventManager).fireBackSwap(backSwapEventCaptor.capture());
+        TwoGemsBoardEvent backSwapEvent = backSwapEventCaptor.getValue();
+        assertNotNull(backSwapEvent);
+        assertTrue(backSwapEvent.getFromGem().getX() == x2);
+        assertTrue(backSwapEvent.getFromGem().getY() == y2);
+        assertTrue(backSwapEvent.getFromGem().isBlocked());
+        assertEquals(expectedGemType2, backSwapEvent.getFromGem().getType());
+        assertTrue(backSwapEvent.getToGem().getX() == x1);
+        assertTrue(backSwapEvent.getToGem().getY() == y1);
+        assertTrue(backSwapEvent.getToGem().isBlocked());
+        assertEquals(expectedGemType1, backSwapEvent.getToGem().getType());
+        backSwapEvent.complete();
+    }
+
+    private void verifyClearFailEvent(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
+        ArgumentCaptor<TwoGemsBoardEvent> clearFailEventCaptor = ArgumentCaptor.forClass(TwoGemsBoardEvent.class);
+        verify(eventManager).fireClearFail(clearFailEventCaptor.capture());
+        TwoGemsBoardEvent clearFailEvent = clearFailEventCaptor.getValue();
+        assertNotNull(clearFailEvent);
+        assertTrue(clearFailEvent.getFromGem().getX() == x1);
+        assertTrue(clearFailEvent.getFromGem().getY() == y1);
+        assertTrue(clearFailEvent.getFromGem().isBlocked());
+        assertEquals(expectedGemType2, clearFailEvent.getFromGem().getType());
+        assertTrue(clearFailEvent.getToGem().getX() == x2);
+        assertTrue(clearFailEvent.getToGem().getY() == y2);
+        assertTrue(clearFailEvent.getToGem().isBlocked());
+        assertEquals(expectedGemType1, clearFailEvent.getToGem().getType());
+        clearFailEvent.complete();
+    }
+
+    private void verifySwapEvent(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
+        ArgumentCaptor<TwoGemsBoardEvent> swapEventCaptor = ArgumentCaptor.forClass(TwoGemsBoardEvent.class);
+        verify(eventManager).fireSwap(swapEventCaptor.capture());
+        TwoGemsBoardEvent swapEvent = swapEventCaptor.getValue();
+
+        assertNotNull(swapEvent);
+        assertTrue(swapEvent.getFromGem().getX() == x1);
+        assertTrue(swapEvent.getFromGem().getY() == y1);
+        assertTrue(swapEvent.getFromGem().isBlocked());
+        assertEquals(expectedGemType2, swapEvent.getFromGem().getType());
+        assertTrue(swapEvent.getToGem().getX() == x2);
+        assertTrue(swapEvent.getToGem().getY() == y2);
+        assertTrue(swapEvent.getToGem().isBlocked());
+        assertEquals(expectedGemType1, swapEvent.getToGem().getType());
+        swapEvent.complete();
     }
 
     private void verifyBoard(PixmapGemsProvider pixmapGemsProvider) {
@@ -172,50 +178,8 @@ public class BoardSwapTest {
         }
     }
 
-    private void verifyBeforeSwap(float fromX, float fromY, GemType expectedFromGemType, float toX, float toY, GemType expectedToGemType) {
-        verifyReadyGems(fromX, fromY, toX, toY);
-        verifySwapGemTypes(fromX, fromY, expectedFromGemType, toX, toY, expectedToGemType);
-    }
-
-    private void verifySwapGemTypes(float fromX, float fromY, GemType expectedFromGemType, float toX, float toY, GemType expectedToGemType) {
-        Gem fromGem = board.getGems().get(coordinatesToIndex(fromX, fromY));
-        assertEquals(fromGem.getType(), expectedFromGemType);
-        Gem toGem = board.getGems().get(coordinatesToIndex(toX, toY));
-        assertEquals(toGem.getType(), expectedToGemType);
-    }
-
-    private void verifySwap(float fromX, float fromY, GemType expectedFromGemType, float toX, float toY, GemType expectedToGemType) {
-        verifyBlockedGems(fromX, fromY, toX, toY);
-        verifySwapGemTypes(fromX, fromY, expectedFromGemType, toX, toY, expectedToGemType);
-        verify(eventManager).fireSwap(any(Gem.class), any(Gem.class));
-    }
-
-    private void verifyClearFailed(float fromX, float fromY, GemType expectedFromGemType, float toX, float toY, GemType expectedToGemType) {
-        verifySwapGemTypes(fromX, fromY, expectedFromGemType, toX, toY, expectedToGemType);
-        verify(eventManager).fireClearFail(fromX, fromY, toX, toY);
-    }
-
-    private void verifyBackSwap(float fromX, float fromY, GemType expectedFromGemType, float toX, float toY, GemType expectedToGemType) {
-        verifySwapGemTypes(fromX, fromY, expectedFromGemType, toX, toY, expectedToGemType);
-        Array<Gem> gems = board.getGems();
-        verify(eventManager).fireBackSwap(gems.get(coordinatesToIndex(toX, toY)), gems.get(coordinatesToIndex(fromX, fromY)));
-    }
-
     private int coordinatesToIndex(float x, float y) {
         return (int) (x * board.getWidth() + y);
     }
 
-    private void verifyBlockedGems(float fromX, float fromY, float toX, float toY) {
-        Gem fromGem = board.getGems().get(coordinatesToIndex(fromX, fromY));
-        assertTrue(fromGem.isBlocked());
-        Gem toGem = board.getGems().get(coordinatesToIndex(toX, toY));
-        assertTrue(toGem.isBlocked());
-    }
-
-    private void verifyReadyGems(float fromX, float fromY, float toX, float toY) {
-        Gem fromGem = board.getGems().get(coordinatesToIndex(fromX, fromY));
-        assertTrue(fromGem.isReady());
-        Gem toGem = board.getGems().get(coordinatesToIndex(toX, toY));
-        assertTrue(toGem.isReady());
-    }
 }

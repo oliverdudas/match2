@@ -13,8 +13,6 @@ public interface Board {
 
     Array<Gem> getGems();
 
-    void clear(float fromX, float fromY, float toX, float toY);
-
     float getWidth();
 
     float getHeight();
@@ -22,10 +20,6 @@ public interface Board {
     void setGemsProvider(GemsProvider provider);
 
     void setEventManager(EventManager eventManager);
-
-    void backSwap(float fromX, float fromY, float toX, float toY);
-
-    void setGemReady(float x, float y);
 
     void fall(Array<Gem> gems);
 

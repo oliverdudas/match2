@@ -24,18 +24,18 @@ public class BoardEventManager implements EventManager {
         }
     }
 
-    public void fireSwap(Gem to, Gem from) {
+    public void fireSwap(TwoGemsBoardEvent event) {
         if (listeners != null) {
             for (BoardEventListener listener : listeners) {
-                listener.onSwap(to, from);
+                listener.onSwap(event);
             }
         }
     }
 
-    public void fireBackSwap(Gem fromGem, Gem toGem) {
+    public void fireBackSwap(TwoGemsBoardEvent event) {
         if (listeners != null) {
             for (BoardEventListener listener : listeners) {
-                listener.onBackSwap(fromGem, toGem);
+                listener.onBackSwap(event);
             }
         }
     }
@@ -48,10 +48,10 @@ public class BoardEventManager implements EventManager {
         }
     }
 
-    public void fireClearFail(float fromX, float fromY, float toX, float toY) {
+    public void fireClearFail(BoardEvent event) {
         if (listeners != null) {
             for (BoardEventListener listener : listeners) {
-                listener.onClearFail(fromX, fromY, toX, toY);
+                listener.onClearFail(event);
                 break; //hack TODO:
             }
         }

@@ -15,9 +15,9 @@ import com.dudas.game.provider.GemsProvider;
  */
 public class BoardController implements Board {
 
-    public static final String TAG = BoardController.class.getName();
+    private static final String TAG = BoardController.class.getName();
 
-    public final float width;
+    private final float width;
     private final float height;
 
     private EventManager eventManager;
@@ -25,8 +25,8 @@ public class BoardController implements Board {
 
     private Pool<Array<Gem>> gemArrayPool;
     private IntArray topBorderIndexes;
-    public float maxBoardIndex;
-    public float minBoardIndex;
+    private float maxBoardIndex;
+    private float minBoardIndex;
 
     public BoardController(float width, float height) {
         this.width = width;
@@ -70,6 +70,14 @@ public class BoardController implements Board {
         }
     }
 
+    /**
+     * Swaps two gems.
+     * This is the entry point for game.
+     * @param fromX is the x coordinate of first gem
+     * @param fromY is the y coordinate of first gem
+     * @param toX is the x coordinate of second gem
+     * @param toY is the y coordinate of second gem
+     */
     @Override
     public void swap(float fromX, float fromY, float toX, float toY) {
         checkNeighborCoordinates(fromX, fromY, toX, toY);
@@ -78,13 +86,35 @@ public class BoardController implements Board {
         int toIndex = createGemBoardIndex(toX, toY);
         swapSynchronized(fromIndex, toIndex);
 
-        Gem toGem = findGem(toIndex);
-        Gem fromGem = findGem(fromIndex);
+        final Gem toGem = findGem(toIndex);
+        final Gem fromGem = findGem(fromIndex);
 
         toGem.block();
         fromGem.block();
 
-        eventManager.fireSwap(toGem, fromGem);
+        eventManager.fireSwap(new TwoGemsBoardEvent() {
+
+            @Override
+            public Gem getFromGem() {
+                return fromGem;
+            }
+
+            @Override
+            public Gem getToGem() {
+                return toGem;
+            }
+
+            @Override
+            public Gem[] getGems() {
+                return new Gem[] {getToGem(), getFromGem()};
+            }
+
+            @Override
+            public void complete() {
+                clear(getFromGem(), getToGem());
+            }
+        });
+
     }
 
     /**
@@ -99,23 +129,41 @@ public class BoardController implements Board {
         synchronizeGemPosition(toIndex);
     }
 
-    @Override
-    public void clear(float fromX, float fromY, float toX, float toY) {
+    private void clear(final Gem fromGem, final Gem toGem) {
         Array<Gem> gems = gemArrayPool.obtain();
 
-        Gem fromGem = findGem(createGemBoardIndex(fromX, fromY));
         GemType fromType = fromGem.getType();
-        populateClearGems(fromX, fromY, gems, fromType);
+        populateClearGems(fromGem, gems, fromType);
 
-        Gem toGem = findGem(createGemBoardIndex(toX, toY));
         GemType toType = toGem.getType();
-        populateClearGems(toX, toY, gems, toType);
+        populateClearGems(toGem, gems, toType);
 
         if (gems.size >= 3) {
             Gem unclearedGem = resolveUnclearedGem(gems, fromGem, toGem);
             eventManager.fireClearSuccess(gems, unclearedGem);
         } else {
-            eventManager.fireClearFail(fromX, fromY, toX, toY);
+            eventManager.fireClearFail(new TwoGemsBoardEvent() {
+
+                @Override
+                public Gem getFromGem() {
+                    return fromGem;
+                }
+
+                @Override
+                public Gem getToGem() {
+                    return toGem;
+                }
+
+                @Override
+                public Gem[] getGems() {
+                    return new Gem[] {getFromGem(), getToGem()};
+                }
+
+                @Override
+                public void complete() {
+                    backSwap(getFromGem(), getToGem());
+                }
+            });
         }
     }
 
@@ -131,11 +179,9 @@ public class BoardController implements Board {
         return unclearedGem;
     }
 
-    private Array<Gem> populateClearGems(float x, float y, Array<Gem> gems, GemType gemType) {
-        Array<Gem> upClearArray = resolveClear(x, y, 0f, 1f, gemType);  // up
-        Array<Gem> downClearArray = resolveClear(x, y, 0f, -1f, gemType); // down
-
-        Gem baseGem = findGem(createGemBoardIndex(x, y));
+    private Array<Gem> populateClearGems(Gem baseGem, Array<Gem> gems, GemType gemType) {
+        Array<Gem> upClearArray = resolveClear(baseGem, 0f, 1f, gemType);  // up
+        Array<Gem> downClearArray = resolveClear(baseGem, 0f, -1f, gemType); // down
 
         if (upClearArray.size + downClearArray.size >= 2) {
             gems.add(baseGem);
@@ -145,8 +191,8 @@ public class BoardController implements Board {
         gemArrayPool.free(upClearArray);
         gemArrayPool.free(downClearArray);
 
-        Array<Gem> rightClearArray = resolveClear(x, y, 1f, 0f, gemType);  // right
-        Array<Gem> leftClearArray = resolveClear(x, y, -1f, 0f, gemType); // left
+        Array<Gem> rightClearArray = resolveClear(baseGem, 1f, 0f, gemType);  // right
+        Array<Gem> leftClearArray = resolveClear(baseGem, -1f, 0f, gemType); // left
         if (rightClearArray.size + leftClearArray.size >= 2) {
             if (!gems.contains(baseGem, false)) {
                 gems.add(baseGem);
@@ -160,13 +206,13 @@ public class BoardController implements Board {
         return gems;
     }
 
-    private Array<Gem> resolveClear(float x, float y, float directionX, float directionY, GemType gemType) {
-        int actualBoardIndex = createGemBoardIndex(x, y);
-        float nextX = x + directionX;
-        float nextY = y + directionY;
+    private Array<Gem> resolveClear(Gem actualGem, float directionX, float directionY, GemType gemType) {
+        int actualBoardIndex = actualGem.getIndex();
+        float nextX = actualGem.getX() + directionX;
+        float nextY = actualGem.getY() + directionY;
         int nextBoardIndex = createGemBoardIndex(nextX, nextY);
         if (areNeighborIndexes(actualBoardIndex, nextBoardIndex) && areTheSameType(gemType, findGem(nextBoardIndex).getType())) {
-            Array<Gem> gemArray = resolveClear(nextX, nextY, directionX, directionY, gemType);
+            Array<Gem> gemArray = resolveClear(findGem(nextBoardIndex), directionX, directionY, gemType);
             gemArray.add(findGem(nextBoardIndex));
             return gemArray;
         } else {
@@ -178,29 +224,34 @@ public class BoardController implements Board {
         return gemType.equals(type);
     }
 
-    @Override
-    public void backSwap(float fromX, float fromY, float toX, float toY) {
-        int fromIndex = createGemBoardIndex(fromX, fromY);
-        int toIndex = createGemBoardIndex(toX, toY);
+    private void backSwap(final Gem fromGem, final Gem toGem) {
+        int fromIndex = fromGem.getIndex();
+        int toIndex = toGem.getIndex();
         swapSynchronized(fromIndex, toIndex);
 
-        eventManager.fireBackSwap(findGem(fromIndex), findGem(toIndex));
-    }
+        eventManager.fireBackSwap(new TwoGemsBoardEvent() {
+            @Override
+            public Gem getFromGem() {
+                return fromGem;
+            }
 
-    @Override
-    public void setGemReady(float x, float y) {
-        findGem(createGemBoardIndex(x, y)).setReady();
-    }
+            @Override
+            public Gem getToGem() {
+                return toGem;
+            }
 
-//    @Override
-//    public void fall(Array<Gem> clearedGems) {
-//        Array<Gem> fallGems = gemArrayPool.obtain();
-//        for (Gem gem : clearedGems) {
-//            moveGemToTop(gem.getIndex(), fallGems);
-//        }
-//        eventManager.fireFall(fallGems);
-//        gemArrayPool.free(clearedGems); // free gems array from clear method TODO: create test for obtaining and freeing
-//    }
+            @Override
+            public Gem[] getGems() {
+                return new Gem[] {getFromGem(), getToGem()};
+            }
+
+            @Override
+            public void complete() {
+                getFromGem().setReady();
+                getToGem().setReady();
+            }
+        });
+    }
 
     public void fall(Array<Gem> clearedGems) {
         Array<Gem> fallGems = gemArrayPool.obtain();
@@ -217,7 +268,7 @@ public class BoardController implements Board {
 
         for (Gem gem : gems) {
             gem.setReady(); // TODO: maybe this should be done in BoardRenderer somehow
-            populateClearGems(gem.getX(), gem.getY(), clearGems, gem.getType());
+            populateClearGems(gem, clearGems, gem.getType());
         }
 
         if (clearGems.size > 2) {
@@ -237,22 +288,6 @@ public class BoardController implements Board {
      * gem till it reaches the top. So every gem above the first should be
      * moved below its original position.
      */
-//    public void moveGemToTop(int boardIndex, Array<Gem> fallGems) {
-//        Gem gemToAdd;
-//        if (isNotTopBoardIndex(boardIndex)) {
-//            int aboveBoardIndex = boardIndex + 1;
-//            gemToAdd = findGem(aboveBoardIndex);
-//            swapSynchronized(boardIndex, aboveBoardIndex);
-//            moveGemToTop(aboveBoardIndex, fallGems);
-//        } else {
-//            Gem synchronizedGem = synchronizeGemPosition(boardIndex);
-//            gemToAdd = synchronizedGem;
-//        }
-//        if (!fallGems.contains(gemToAdd, false)) { // maybe a Set would be better, to prevent duplicate items
-//            fallGems.add(gemToAdd);
-//        }
-//    }
-
     public void moveGemToTop(int gemIndex, Array<Gem> fallGems) {
         int aboveGemIndex = getAboveNeighborIndex(gemIndex);
         if (isValidIndex(gemIndex) && isValidIndex(aboveGemIndex)) {
@@ -275,7 +310,7 @@ public class BoardController implements Board {
         return (int) (x * width + y);
     }
 
-    public Gem findGem(int boardIndex) {
+    private Gem findGem(int boardIndex) {
         Gem gem = getGems().get(boardIndex);
         if (gem == null) {
             throw new RuntimeException("Gem on boardIndex position doesn't exist!");
@@ -296,23 +331,6 @@ public class BoardController implements Board {
         return height;
     }
 
-    public IntArray getTopBorderIndexes() {
-        return topBorderIndexes;
-    }
-
-    private float createGemBoardPositionX(int index) {
-        return index / width;
-    }
-
-    private float createGemBoardPositionY(int index) {
-        return index % height;
-    }
-
-    private Gem findGem(float boardIndex) {
-        return findGem((int) boardIndex);
-    }
-
-
     @Override
     public void setGemsProvider(GemsProvider provider) {
         this.gemsProvider = provider;
@@ -326,27 +344,6 @@ public class BoardController implements Board {
     public void setEventProcessor(BoardEventListener matchGameListener) {
         eventManager.attach(matchGameListener);
     }
-//    @Deprecated
-//    private Gem findGem(float x, float y) {
-//        for (Gem gem : getGems()) {
-//            if (gem.getX() == x && gem.getY() == y) {
-//                return gem;
-//            }
-//        }
-//        return null;
-//    }
-
-//    public IntArray getRightBorderIndexes() {
-//        return rightBorderIndexes;
-//    }
-
-//    private void initRightBorderIndexes() {
-//        rightBorderIndexes = new IntArray((int) height);
-//        float tilecount = width * height;
-//        for (int i = 1; i <= height; i++) {
-//            rightBorderIndexes.add((int) tilecount - i);
-//        }
-//    }
 
     private IntArray getNeighborIndexes(int gemIndex) {
         IntArray neighborIndexes = new IntArray(4);

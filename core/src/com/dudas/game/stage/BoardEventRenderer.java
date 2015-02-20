@@ -1,6 +1,5 @@
 package com.dudas.game.stage;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
@@ -13,15 +12,16 @@ import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.Board;
 import com.dudas.game.Constants;
 import com.dudas.game.Gem;
+import com.dudas.game.controller.BoardEvent;
+import com.dudas.game.controller.BoardEventListener;
+import com.dudas.game.controller.TwoGemsBoardEvent;
 import com.dudas.game.event.action.ClearDoneEvent;
 import com.dudas.game.event.action.FallDoneEvent;
 import com.dudas.game.event.action.FireEventAction;
-import com.dudas.game.controller.BoardEventListener;
 import com.dudas.game.model.GemType;
 import com.dudas.game.stage.poolables.BoardCountDownEventAction;
 import com.dudas.game.stage.poolables.ClearCompleteCallback;
 import com.dudas.game.stage.poolables.FallCompleteCallback;
-import com.dudas.game.stage.poolables.SwapCompleteCallback;
 
 import java.util.Comparator;
 
@@ -33,7 +33,7 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
  */
 public class BoardEventRenderer implements BoardEventListener {
 
-    public static final String TAG = GameStage.class.getName();
+    private static final String TAG = GameStage.class.getName();
     public static final float ACTION_DURATION = 0.1f;
 
     private Board board;
@@ -42,7 +42,6 @@ public class BoardEventRenderer implements BoardEventListener {
 
     private Pool<MoveToAction> moveToActionPool;
     private Pool<ScaleToAction> scaleToActionPool;
-    private Pool<SwapCompleteCallback> swapCompleteCallbackPool;
     private Pool<ClearCompleteCallback> clearCompleteCallbackPool;
     private Pool<FallCompleteCallback> fallCompleteCallbackPool;
     private Pool<FireEventAction> fireEventPool;
@@ -83,19 +82,6 @@ public class BoardEventRenderer implements BoardEventListener {
             public ScaleToAction obtain() {
                 ScaleToAction obtain = super.obtain();
                 obtain.setPool(scaleToActionPool);
-                return obtain;
-            }
-        };
-        this.swapCompleteCallbackPool = new Pool<SwapCompleteCallback>() {
-            @Override
-            protected SwapCompleteCallback newObject() {
-                return new SwapCompleteCallback();
-            }
-
-            @Override
-            public SwapCompleteCallback obtain() {
-                SwapCompleteCallback obtain = super.obtain();
-                obtain.setPool(swapCompleteCallbackPool);
                 return obtain;
             }
         };
@@ -200,49 +186,50 @@ public class BoardEventRenderer implements BoardEventListener {
     }
 
     @Override
-    public void onSwap(Gem to, Gem from) {
-        SwapCompleteCallback swapCompleteCallback = swapCompleteCallbackPool.obtain();
-        GemActor fromActor = gemActors.get(from);
-        GemActor toActor = gemActors.get(to);
-        swapCompleteCallback.addSwapPair(fromActor, toActor);
-        swapCompleteCallback.addBoard(board);
-        handleSwapAction(fromActor, from.getX(), from.getY());
-        handleSwapAction(toActor, to.getX(), to.getY(), swapCompleteCallback); // TODO: refactor with use of CountDownEventAction like onClearSuccess
+    public void onSwap(TwoGemsBoardEvent event) {
+        Gem fromGem = event.getFromGem();
+        GemActor fromActor = gemActors.get(fromGem);
+        Gem toGem = event.getToGem();
+        GemActor toActor = gemActors.get(toGem);
+        handleSwapAction(fromActor, fromGem);
+        handleSwapAction(toActor, toGem, event); // TODO: refactor with use of CountDownEventAction like onClearSuccess
     }
 
-    private void handleSwapAction(final GemActor gemActor, float x, float y) {
-        handleSwapAction(gemActor, x, y, null);
+    private void handleSwapAction(final GemActor gemActor, Gem gem) {
+        handleSwapAction(gemActor, gem, null);
     }
 
-    private void handleSwapAction(final GemActor gemActor, float x, float y, SwapCompleteCallback swapCompleteCallback) {
+    private void handleSwapAction(final GemActor gemActor, Gem gem, final BoardEvent event) {
         MoveToAction fromTo = moveToActionPool.obtain();
-        fromTo.setPosition(x, y);
+        fromTo.setPosition(gem.getX(), gem.getY());
         fromTo.setDuration(0.2f);
 
-        if (swapCompleteCallback != null) {
-            gemActor.addAction(sequence(fromTo, run(swapCompleteCallback)));
+        if (event != null) {
+            gemActor.addAction(sequence(fromTo, run(new Runnable() {
+                @Override
+                public void run() {
+                    event.complete();
+                }
+            })));
         } else {
             gemActor.addAction(fromTo);
         }
     }
 
     @Override
-    public void onBackSwap(Gem fromGem, Gem toGem) {
+    public void onBackSwap(TwoGemsBoardEvent event) {
+        Gem fromGem = event.getFromGem();
         GemActor fromActor = gemActors.get(fromGem);
+        Gem toGem = event.getToGem();
         GemActor toActor = gemActors.get(toGem);
 
         // the gem has ben changed in board, now the gemActor must be synchronized
-        handleSwapAction(fromActor, fromGem.getX(), fromGem.getY());
-        SwapCompleteCallback swapCompleteCallback = swapCompleteCallbackPool.obtain();
-        swapCompleteCallback.addSwapPair(fromActor, toActor);
-        swapCompleteCallback.setBackSwap(true);
-        handleSwapAction(toActor, toGem.getX(), toGem.getY(), swapCompleteCallback);
+        handleSwapAction(fromActor, fromGem);
+        handleSwapAction(toActor, toGem, event);
     }
 
     @Override
     public void onClearSuccess(final Array<Gem> gems, Gem unclearedGem) {
-        Gdx.app.debug(TAG, "ClearSuccess(size): " + gems.size);
-
         if (unclearedGem != null) {
             gemActors.get(unclearedGem).setReady();
         }
@@ -292,15 +279,12 @@ public class BoardEventRenderer implements BoardEventListener {
     }
 
     @Override
-    public void onClearFail(float fromX, float fromY, float toX, float toY) {
-        Gdx.app.debug(TAG, "ClearFail: (" + fromX + ", " + fromY + ", " + toX + ", " + toY + ")");
-        board.backSwap(fromX, fromY, toX, toY);
+    public void onClearFail(BoardEvent event) {
+        event.complete();
     }
 
     @Override
     public void onFall(final Array<Gem> gems) {
-        Gdx.app.debug(TAG, "Fall: count: " + gems.size);
-
         gems.sort(new Comparator<Gem>() {
             @Override
             public int compare(Gem o1, Gem o2) {

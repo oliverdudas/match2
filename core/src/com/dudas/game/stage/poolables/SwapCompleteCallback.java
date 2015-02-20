@@ -1,49 +1,27 @@
 package com.dudas.game.stage.poolables;
 
-import com.dudas.game.Board;
-import com.dudas.game.stage.GemActor;
+import com.dudas.game.controller.BoardEvent;
 
 /**
  * Created by foxy on 06/02/2015.
  */
 public class SwapCompleteCallback extends BasePool<SwapCompleteCallback> implements Runnable {
 
-    private Board board;
-    private GemActor selectedActor;
-    private GemActor swapedActor;
-    private boolean backSwap;
+    private BoardEvent event;
 
     @Override
     public void run() {
-        if (!backSwap) {
-            board.clear(selectedActor.getX(), selectedActor.getY(), swapedActor.getX(), swapedActor.getY());
-        } else {
-            board.setGemReady(selectedActor.getX(), selectedActor.getY());
-            board.setGemReady(swapedActor.getX(), swapedActor.getY());
-        }
-
+        event.complete();
         returnToPool(this);
     }
 
-    public void addBoard(Board board) {
-        this.board = board;
-    }
-
-    public void addSwapPair(GemActor actor1, GemActor actor2) {
-        this.selectedActor = actor1;
-        this.swapedActor = actor2;
-    }
-
-    public void setBackSwap(boolean backSwap) {
-        this.backSwap = backSwap;
+    public void setEvent(BoardEvent event) {
+        this.event = event;
     }
 
     @Override
     public void reset() {
-        this.board = null;
-        this.selectedActor = null;
-        this.swapedActor = null;
-        this.backSwap = false;
+        this.event = null;
         super.reset();
     }
 }
