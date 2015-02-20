@@ -58,6 +58,7 @@ project(":core") {
     apply plugin: "java"
 
     sourceSets.test.java.srcDirs = ["test/"]
+    sourceSets.test.resources.srcDirs = ["test/resources/"]
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"

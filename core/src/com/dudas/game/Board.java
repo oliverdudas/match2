@@ -25,6 +25,8 @@ public interface Board {
 
     void backSwap(float fromX, float fromY, float toX, float toY);
 
+    void setGemReady(float x, float y);
+
     void fall(Array<Gem> gems);
 
     void clearFallen(Array<Gem> gems);

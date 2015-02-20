@@ -188,6 +188,20 @@ public class BoardController implements Board {
     }
 
     @Override
+    public void setGemReady(float x, float y) {
+        findGem(createGemBoardIndex(x, y)).setReady();
+    }
+
+//    @Override
+//    public void fall(Array<Gem> clearedGems) {
+//        Array<Gem> fallGems = gemArrayPool.obtain();
+//        for (Gem gem : clearedGems) {
+//            moveGemToTop(gem.getIndex(), fallGems);
+//        }
+//        eventManager.fireFall(fallGems);
+//        gemArrayPool.free(clearedGems); // free gems array from clear method TODO: create test for obtaining and freeing
+//    }
+
     public void fall(Array<Gem> clearedGems) {
         Array<Gem> fallGems = gemArrayPool.obtain();
         for (Gem gem : clearedGems) {
@@ -223,19 +237,31 @@ public class BoardController implements Board {
      * gem till it reaches the top. So every gem above the first should be
      * moved below its original position.
      */
-    public void moveGemToTop(int boardIndex, Array<Gem> fallGems) {
-        Gem gemToAdd;
-        if (isNotTopBoardIndex(boardIndex)) {
-            int aboveBoardIndex = boardIndex + 1;
-            gemToAdd = findGem(aboveBoardIndex);
-            swapSynchronized(boardIndex, aboveBoardIndex);
-            moveGemToTop(aboveBoardIndex, fallGems);
-        } else {
-            Gem synchronizedGem = synchronizeGemPosition(boardIndex);
-            gemToAdd = synchronizedGem;
+//    public void moveGemToTop(int boardIndex, Array<Gem> fallGems) {
+//        Gem gemToAdd;
+//        if (isNotTopBoardIndex(boardIndex)) {
+//            int aboveBoardIndex = boardIndex + 1;
+//            gemToAdd = findGem(aboveBoardIndex);
+//            swapSynchronized(boardIndex, aboveBoardIndex);
+//            moveGemToTop(aboveBoardIndex, fallGems);
+//        } else {
+//            Gem synchronizedGem = synchronizeGemPosition(boardIndex);
+//            gemToAdd = synchronizedGem;
+//        }
+//        if (!fallGems.contains(gemToAdd, false)) { // maybe a Set would be better, to prevent duplicate items
+//            fallGems.add(gemToAdd);
+//        }
+//    }
+
+    public void moveGemToTop(int gemIndex, Array<Gem> fallGems) {
+        int aboveGemIndex = getAboveNeighborIndex(gemIndex);
+        if (isValidIndex(gemIndex) && isValidIndex(aboveGemIndex)) {
+            swapSynchronized(gemIndex, aboveGemIndex);
+            moveGemToTop(aboveGemIndex, fallGems);
         }
-        if (!fallGems.contains(gemToAdd, false)) { // maybe a Set would be better, to prevent duplicate items
-            fallGems.add(gemToAdd);
+        Gem gem = findGem(gemIndex); // TODO: refactor
+        if (!fallGems.contains(gem, false)) { // maybe a Set would be better, to prevent duplicate items
+            fallGems.add(gem);
         }
     }
 

@@ -18,8 +18,8 @@ public class SwapCompleteCallback extends BasePool<SwapCompleteCallback> impleme
         if (!backSwap) {
             board.clear(selectedActor.getX(), selectedActor.getY(), swapedActor.getX(), swapedActor.getY());
         } else {
-            selectedActor.setReady();
-            swapedActor.setReady();
+            board.setGemReady(selectedActor.getX(), selectedActor.getY());
+            board.setGemReady(swapedActor.getX(), swapedActor.getY());
         }
 
         returnToPool(this);

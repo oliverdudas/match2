@@ -15,10 +15,6 @@ public class TestGemsProvider implements GemsProvider {
     public TestGemsProvider() {
     }
 
-    public TestGemsProvider(Gem... gems) {
-        this.gems = new Array<Gem>(gems);
-    }
-
     @Override
     public Array<Gem> getGems(float width, float height) {
         if (gems == null) {

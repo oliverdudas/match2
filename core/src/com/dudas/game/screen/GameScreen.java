@@ -8,6 +8,7 @@ import com.dudas.game.Constants;
 import com.dudas.game.assets.Assets;
 import com.dudas.game.controller.BoardController;
 import com.dudas.game.controller.BoardEventManager;
+import com.dudas.game.provider.PixmapGemsProvider;
 import com.dudas.game.provider.TestGemsProvider;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.MainStage;
@@ -56,6 +57,7 @@ public class GameScreen extends AbstractGameScreen {
         BoardController board = new BoardController(
                 Constants.BOARD_WIDTH,
                 Constants.BOARD_HEIGHT,
+//                new TestGemsProvider(),
                 new TestGemsProvider(),
                 new BoardEventManager()
         );
