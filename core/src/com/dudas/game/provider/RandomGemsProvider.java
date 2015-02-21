@@ -25,6 +25,11 @@ public class RandomGemsProvider implements GemsProvider {
         return gems;
     }
 
+    @Override
+    public GemType getRandomGemType() {
+        return GemType.getRandom();
+    }
+
     private Gem createRandomGem(float x, float y) {
         return new GemModel(GemType.getRandom(), x, y);
     }

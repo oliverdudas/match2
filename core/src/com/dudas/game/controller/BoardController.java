@@ -264,7 +264,7 @@ public class BoardController implements Board {
         final Array<Gem> fallGems = gemArrayPool.obtain();
         for (Gem gem : clearedGems) {
             gem.setNew(true);
-            gem.setType(GemType.getRandom());
+            gem.setType(gemsProvider.getRandomGemType());
             moveGemToTop(gem.getIndex(), fallGems);
         }
         eventManager.fireFall(new BoardEvent() {
@@ -291,11 +291,12 @@ public class BoardController implements Board {
         final Array<Gem> clearGems = gemArrayPool.obtain();
 
         for (Gem gem : gems) {
-            gem.setReady(); // TODO: maybe this should be done in BoardRenderer somehow
+            gem.setReady();
             populateClearGems(gem, clearGems, gem.getType());
         }
 
         if (clearGems.size > 2) {
+            blockGems(clearGems);
             eventManager.fireClearSuccess(new BoardEvent() {
                 @Override
                 public Gem[] getGems() {
@@ -409,6 +410,7 @@ public class BoardController implements Board {
         }
         Gem gem = findGem(gemIndex); // TODO: refactor
         if (!fallGems.contains(gem, false)) { // maybe a Set would be better, to prevent duplicate items
+            gem.block();
             fallGems.add(gem);
         }
     }

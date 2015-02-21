@@ -18,6 +18,7 @@ import java.net.URISyntaxException;
 public class PixmapGemsProvider implements GemsProvider {
 
     private Array<Gem> gems;
+    private Array<GemType> gemTypeStack;
 
     public PixmapGemsProvider(String fileName) {
         this.gems = new Array<Gem>();
@@ -69,6 +70,22 @@ public class PixmapGemsProvider implements GemsProvider {
     @Override
     public Array<Gem> getGems(float width, float height) {
         return gems;
+    }
+
+    @Override
+    public GemType getRandomGemType() {
+        if (gemTypeStack != null && gemTypeStack.size > 0) {
+            return gemTypeStack.removeIndex(0);
+        }
+        return GemType.getRandom();
+    }
+
+    public void addGemTypeToStack(GemType... gemTypes) {
+        if (gemTypeStack == null) {
+            gemTypeStack = new Array<GemType>();
+        }
+
+        gemTypeStack.addAll(gemTypes);
     }
 
     public enum GEM_COLOR_TYPE {

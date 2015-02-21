@@ -2,12 +2,10 @@ package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.Board;
-import com.dudas.game.Constants;
 import com.dudas.game.EventManager;
 import com.dudas.game.Gem;
 import com.dudas.game.model.GemType;
 import com.dudas.game.provider.PixmapGemsProvider;
-import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -27,55 +25,6 @@ public abstract class BaseBoardTest {
     @Mock
     protected EventManager eventManager;
     protected Board board;
-
-    @Before
-    public void setUp() throws Exception {
-        board = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
-        board.setGemsProvider(new PixmapGemsProvider(TESTBOARD_PNG));
-        board.setEventManager(eventManager);
-    }
-
-    protected void verifyBackSwapFlow(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
-        verifyBoardReady();
-        board.swap(x1, y1, x2, y2);
-        verifySwapEvent(x1, y1, expectedGemType1, x2, y2, expectedGemType2);
-        verifyClearFailEvent(x1, y1, expectedGemType1, x2, y2, expectedGemType2);
-        verifyBackSwapEvent(x1, y1, expectedGemType1, x2, y2, expectedGemType2);
-        verifyBoardReady();
-        verifyBoard(new PixmapGemsProvider(TESTBOARD_PNG));
-    }
-
-    protected void verifyBackSwapEvent(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
-        ArgumentCaptor<TwoGemsBoardEvent> backSwapEventCaptor = ArgumentCaptor.forClass(TwoGemsBoardEvent.class);
-        verify(eventManager).fireBackSwap(backSwapEventCaptor.capture());
-        TwoGemsBoardEvent backSwapEvent = backSwapEventCaptor.getValue();
-        assertNotNull(backSwapEvent);
-        assertTrue(backSwapEvent.getFromGem().getX() == x2);
-        assertTrue(backSwapEvent.getFromGem().getY() == y2);
-        assertTrue(backSwapEvent.getFromGem().isBlocked());
-        assertEquals(expectedGemType2, backSwapEvent.getFromGem().getType());
-        assertTrue(backSwapEvent.getToGem().getX() == x1);
-        assertTrue(backSwapEvent.getToGem().getY() == y1);
-        assertTrue(backSwapEvent.getToGem().isBlocked());
-        assertEquals(expectedGemType1, backSwapEvent.getToGem().getType());
-        backSwapEvent.complete();
-    }
-
-    protected void verifyClearFailEvent(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
-        ArgumentCaptor<TwoGemsBoardEvent> clearFailEventCaptor = ArgumentCaptor.forClass(TwoGemsBoardEvent.class);
-        verify(eventManager).fireClearFail(clearFailEventCaptor.capture());
-        TwoGemsBoardEvent clearFailEvent = clearFailEventCaptor.getValue();
-        assertNotNull(clearFailEvent);
-        assertTrue(clearFailEvent.getFromGem().getX() == x1);
-        assertTrue(clearFailEvent.getFromGem().getY() == y1);
-        assertTrue(clearFailEvent.getFromGem().isBlocked());
-        assertEquals(expectedGemType2, clearFailEvent.getFromGem().getType());
-        assertTrue(clearFailEvent.getToGem().getX() == x2);
-        assertTrue(clearFailEvent.getToGem().getY() == y2);
-        assertTrue(clearFailEvent.getToGem().isBlocked());
-        assertEquals(expectedGemType1, clearFailEvent.getToGem().getType());
-        clearFailEvent.complete();
-    }
 
     protected void verifySwapEvent(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
         ArgumentCaptor<TwoGemsBoardEvent> swapEventCaptor = ArgumentCaptor.forClass(TwoGemsBoardEvent.class);
@@ -108,6 +57,12 @@ public abstract class BaseBoardTest {
     protected void verifyBoardReady() {
         for (Gem gem : board.getGems()) {
             assertTrue(gem.isReady());
+        }
+    }
+
+    protected void verifyBlockedGems(Gem... gems) {
+        for (Gem gem : gems) {
+            assertTrue(gem.isBlocked());
         }
     }
 

@@ -112,4 +112,9 @@ public class TestGemsProvider implements GemsProvider {
         return gems;
     }
 
+    @Override
+    public GemType getRandomGemType() {
+        return GemType.getRandom();
+    }
+
 }

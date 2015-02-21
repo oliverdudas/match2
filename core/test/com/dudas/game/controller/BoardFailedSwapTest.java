@@ -1,8 +1,11 @@
 package com.dudas.game.controller;
 
+import com.dudas.game.Constants;
 import com.dudas.game.Gem;
 import com.dudas.game.exception.NeighborException;
 import com.dudas.game.model.GemType;
+import com.dudas.game.provider.PixmapGemsProvider;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,7 +13,14 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by foxy on 07/02/2015.
  */
-public class BoardFailedSwapTest extends BaseBoardTest {
+public class BoardFailedSwapTest extends BaseSwapBoardTest {
+
+    @Before
+    public void setUp() throws Exception {
+        board = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
+        board.setGemsProvider(new PixmapGemsProvider(TESTBOARD_PNG));
+        board.setEventManager(eventManager);
+    }
 
     @Test(expected = NeighborException.class)
     public void testDiagonalNeighborSwap() throws Exception {
