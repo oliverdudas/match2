@@ -69,22 +69,38 @@ public class BoardFailedSwapTest extends BaseSwapBoardTest {
 
     @Test
     public void testUpNeighborSwapFlow() throws Exception {
-        verifyBackSwapFlow(0, 0, GemType.BLUE, 0, 1, GemType.RED);
+        expectedSwapGem1Type = GemType.BLUE;
+        expectedSwapGem2Type = GemType.RED;
+        expectedFinalBoard = TESTBOARD_PNG;
+
+        verifyBackSwapFlow(0, 0, 0, 1);
     }
 
     @Test
     public void testRightNighborSwapFlow() throws Exception {
-        verifyBackSwapFlow(1, 0, GemType.BLUE, 2, 0, GemType.YELLOW);
+        expectedSwapGem1Type = GemType.BLUE;
+        expectedSwapGem2Type = GemType.YELLOW;
+        expectedFinalBoard = TESTBOARD_PNG;
+
+        verifyBackSwapFlow(1, 0, 2, 0);
     }
 
     @Test
     public void testDownNighborSwapFlow() throws Exception {
-        verifyBackSwapFlow(1, 1, GemType.RED, 1, 0, GemType.BLUE);
+        expectedSwapGem1Type = GemType.RED;
+        expectedSwapGem2Type = GemType.BLUE;
+        expectedFinalBoard = TESTBOARD_PNG;
+
+        verifyBackSwapFlow(1, 1, 1, 0);
     }
 
     @Test
     public void testLeftNighborSwapFlow() throws Exception {
-        verifyBackSwapFlow(1, 0, GemType.BLUE, 0, 0, GemType.BLUE);
+        expectedSwapGem1Type = GemType.BLUE;
+        expectedSwapGem2Type = GemType.BLUE;
+        expectedFinalBoard = TESTBOARD_PNG;
+
+        verifyBackSwapFlow(1, 0, 0, 0);
     }
 
 }

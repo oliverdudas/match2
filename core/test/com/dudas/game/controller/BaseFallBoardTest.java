@@ -5,7 +5,6 @@ import com.dudas.game.model.GemType;
 import com.dudas.game.provider.PixmapGemsProvider;
 import org.mockito.ArgumentCaptor;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -15,20 +14,22 @@ import static org.mockito.Mockito.verify;
  */
 public abstract class BaseFallBoardTest extends BaseSwapBoardTest {
 
-    public static final String EXPECTED_BOARD_AFTER_FALL_FLOW_PNG = "expected_board_after_fall_flow.png";
-
-    protected void verifyFallFlow(float x1, float y1, GemType expectedGemType1, float x2, float y2, GemType expectedGemType2) {
+    /**
+     * Flow: START|SWAP -> CLEAR(success) -> FALL|END
+     *
+     * @param x1               first gem x coordinate
+     * @param y1               first gem y coordinate
+     * @param x2               second gem x coordinate
+     * @param y2               second gem y coordinate
+     */
+    protected void verify3ClearFlow(float x1, float y1, float x2, float y2) {
         verifyBoardReady();
         board.swap(x1, y1, x2, y2);
-        verifySwapEvent(x1, y1, expectedGemType1, x2, y2, expectedGemType2);
-
+        verifySwapEvent(x1, y1, x2, y2);
         verifyClearSuccessEvent();
-
         verifyFallEvent();
-
         verifyBoardReady();
-
-        verifyBoard(new PixmapGemsProvider(EXPECTED_BOARD_AFTER_FALL_FLOW_PNG));
+        verifyBoard();
     }
 
     private void verifyFallEvent() {
@@ -39,7 +40,7 @@ public abstract class BaseFallBoardTest extends BaseSwapBoardTest {
         assertNotNull(fallEvent);
 
         Gem[] gems = fallEvent.getGems();
-        assertTrue(6 == gems.length);
+        assertTrue(expectedFallEvent.gemsSize == gems.length);
         verifyBlockedGems(gems);
 
         fallEvent.complete();
@@ -49,29 +50,17 @@ public abstract class BaseFallBoardTest extends BaseSwapBoardTest {
         ArgumentCaptor<BoardEvent> clearSuccessEventCaptor = ArgumentCaptor.forClass(BoardEvent.class);
         verify(eventManager).fireClearSuccess(clearSuccessEventCaptor.capture());
         BoardEvent clearSuccessEvent = clearSuccessEventCaptor.getValue();
-
         assertNotNull(clearSuccessEvent);
-
         Gem[] gems = clearSuccessEvent.getGems();
-        Gem gem1 = gems[0];
-        Gem gem2 = gems[1];
-        Gem gem3 = gems[2];
-
-        assertTrue(gem1.getX() == 3);
-        assertTrue(gem1.getY() == 7);
-        assertTrue(gem1.isBlocked());
-        assertEquals(GemType.ORANGE, gem1.getType());
-
-        assertTrue(gem2.getX() == 5);
-        assertTrue(gem2.getY() == 7);
-        assertTrue(gem2.isBlocked());
-        assertEquals(GemType.ORANGE, gem2.getType());
-
-        assertTrue(gem3.getX() == 4);
-        assertTrue(gem3.getY() == 7);
-        assertTrue(gem3.isBlocked());
-        assertEquals(GemType.ORANGE, gem3.getType());
-
+        for (ExpectedClearSuccessEvent.LengthWithType lengthWithType : expectedClearSuccessEvent.lengthWithTypeList) {
+            int length = 0;
+            for (Gem gem : gems) {
+                if (lengthWithType.expectedType.equals(gem.getType())) {
+                    length++;
+                }
+            }
+            assertTrue(lengthWithType.expectedLength == length);
+        }
         clearSuccessEvent.complete();
     }
 
