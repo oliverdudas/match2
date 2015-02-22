@@ -1,5 +1,6 @@
 package com.dudas.game.controller.helper;
 
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.dudas.game.model.Gem;
 import com.dudas.game.exception.NeighborException;
@@ -33,6 +34,36 @@ public class DefaultBoardHelper implements BoardHelper {
         for (int i = 1; i <= width; i++) {
             topBorderIndexes.add((int) width * i - 1);
         }
+    }
+
+    @Override
+    public Gem findGem(int boardIndex, Array<Gem> boardGems) {
+        Gem gem = boardGems.get(boardIndex);
+        if (gem == null) {
+            throw new RuntimeException("Gem on boardIndex position doesn't exist!");
+        }
+        return gem;
+    }
+
+    /**
+     * Swaps indexes in the gems array and also swaps both gems positions
+     *
+     * @param fromIndex index of forst gem to swap
+     * @param toIndex   index of second gem to swap
+     */
+    @Override
+    public void swapSynchronized(int fromIndex, int toIndex, Array<Gem> boardGems) {
+        boardGems.swap(fromIndex, toIndex);
+        synchronizeGemPosition(fromIndex, boardGems);
+        synchronizeGemPosition(toIndex, boardGems);
+    }
+
+
+    @Override
+    public Gem synchronizeGemPosition(int boardIndex, Array<Gem> boardGems) {
+        Gem gem = findGem(boardIndex, boardGems);
+        gem.setIndex(boardIndex);
+        return gem;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.dudas.game.controller.helper;
 
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import com.dudas.game.model.Gem;
 
@@ -7,6 +8,12 @@ import com.dudas.game.model.Gem;
  * Created by OLO on 22. 2. 2015
  */
 public interface BoardHelper {
+    Gem findGem(int boardIndex, Array<Gem> boardGems);
+
+    void swapSynchronized(int fromIndex, int toIndex, Array<Gem> boardGems);
+
+    Gem synchronizeGemPosition(int boardIndex, Array<Gem> boardGems);
+
     boolean isNotTopBoardIndex(int below);
 
     boolean areSameType(Gem gemType1, Gem gemType2);

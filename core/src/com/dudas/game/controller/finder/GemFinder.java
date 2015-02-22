@@ -1,6 +1,5 @@
 package com.dudas.game.controller.finder;
 
-import com.badlogic.gdx.utils.Array;
 import com.dudas.game.model.Gem;
 
 /**
@@ -8,5 +7,5 @@ import com.dudas.game.model.Gem;
  */
 public interface GemFinder {
 
-    Array<Gem> find(Array<Gem> gems);
+    Gem[] find(Gem... gems);
 }

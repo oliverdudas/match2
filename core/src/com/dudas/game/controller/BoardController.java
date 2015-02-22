@@ -2,15 +2,12 @@ package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import com.dudas.game.controller.event.EventManager;
-import com.dudas.game.model.Gem;
-import com.dudas.game.controller.event.BoardEvent;
-import com.dudas.game.controller.event.BoardEventListener;
-import com.dudas.game.controller.event.BoardEventManager;
-import com.dudas.game.controller.event.TwoGemsBoardEvent;
+import com.dudas.game.controller.event.*;
+import com.dudas.game.controller.finder.ClearFinder;
+import com.dudas.game.controller.finder.FallFinder;
 import com.dudas.game.controller.helper.BoardHelper;
 import com.dudas.game.controller.helper.DefaultBoardHelper;
-import com.dudas.game.model.GemType;
+import com.dudas.game.model.Gem;
 import com.dudas.game.model.provider.GemsProvider;
 import com.dudas.game.model.provider.TestGemsProvider;
 
@@ -154,13 +151,12 @@ public class BoardController implements Board {
 
         int fromIndex = helper.createGemBoardIndex(fromX, fromY);
         int toIndex = helper.createGemBoardIndex(toX, toY);
-        swapSynchronized(fromIndex, toIndex);
+        helper.swapSynchronized(fromIndex, toIndex, getGems());
 
-        final Gem toGem = findGem(toIndex);
-        final Gem fromGem = findGem(fromIndex);
+        final Gem toGem = helper.findGem(toIndex, getGems());
+        final Gem fromGem = helper.findGem(fromIndex, getGems());
 
-        toGem.block();
-        fromGem.block();
+        blockGems(fromGem, toGem);
 
         eventManager.fireSwap(new TwoGemsBoardEvent() {
 
@@ -190,7 +186,7 @@ public class BoardController implements Board {
     private void backSwap(final Gem fromGem, final Gem toGem) {
         int fromIndex = fromGem.getIndex();
         int toIndex = toGem.getIndex();
-        swapSynchronized(fromIndex, toIndex);
+        helper.swapSynchronized(fromIndex, toIndex, getGems());
 
         eventManager.fireBackSwap(new TwoGemsBoardEvent() {
             @Override
@@ -217,21 +213,16 @@ public class BoardController implements Board {
     }
 
     private void clear(final Gem fromGem, final Gem toGem) {
-        final Array<Gem> gems = gemArrayPool.obtain();
+        ClearFinder clearFinder = new ClearFinder(getGems(), helper);
+        final Gem[] clearGems = clearFinder.find(fromGem, toGem);
 
-        GemType fromType = fromGem.getType();
-        populateClearGems(fromGem, gems, fromType);
-
-        GemType toType = toGem.getType();
-        populateClearGems(toGem, gems, toType);
-
-        if (gems.size >= 3) {
-            final Gem unclearedGem = resolveUnclearedGem(gems, fromGem, toGem);
-            blockGems(gems);
+        if (clearGems.length >= 3) {
+            blockGems(clearGems);
+            final Gem unclearedGem = resolveUnclearedGem(fromGem, toGem, clearGems);
             eventManager.fireClearSuccess(new BoardEvent() {
                 @Override
                 public Gem[] getGems() {
-                    return gems.toArray(Gem.class);
+                    return clearGems;
                 }
 
                 @Override
@@ -239,7 +230,7 @@ public class BoardController implements Board {
                     if (unclearedGem != null) {
                         unclearedGem.setReady();
                     }
-                    fall(gems);
+                    fall(clearGems);
                 }
             });
         } else {
@@ -268,17 +259,14 @@ public class BoardController implements Board {
         }
     }
 
-    private void fall(final Array<Gem> clearedGems) {
-        final Array<Gem> fallGems = gemArrayPool.obtain();
-        for (Gem gem : clearedGems) {
-            gem.setNew(true);
-            gem.setType(gemsProvider.getRandomGemType());
-            moveGemToTop(gem.getIndex(), fallGems);
-        }
+    private void fall(final Gem... clearedGems) {
+        FallFinder fallFinder = new FallFinder(getGems(), helper, gemsProvider);
+        final Gem[] fallGems = fallFinder.find(clearedGems);
+
         eventManager.fireFall(new BoardEvent() {
             @Override
             public Gem[] getGems() {
-                return fallGems.toArray(Gem.class);
+                return fallGems;
             }
 
             @Override
@@ -287,7 +275,7 @@ public class BoardController implements Board {
                 clearFallen(fallGems);
             }
 
-            private void resetNewGems(Array<Gem> clearedGems) {
+            private void resetNewGems(Gem... clearedGems) {
                 for (Gem clearedGem : clearedGems) {
                     clearedGem.setNew(false);
                 }
@@ -295,20 +283,16 @@ public class BoardController implements Board {
         });
     }
 
-    private void clearFallen(Array<Gem> gems) {
-        final Array<Gem> clearGems = gemArrayPool.obtain();
+    private void clearFallen(Gem... fallGems) {
+        ClearFinder clearFinder = new ClearFinder(getGems(), helper);
+        final Gem[] clearGems = clearFinder.find(fallGems);
 
-        for (Gem gem : gems) {
-            gem.setReady();
-            populateClearGems(gem, clearGems, gem.getType());
-        }
-
-        if (clearGems.size > 2) {
+        if (clearGems.length >= 3) {
             blockGems(clearGems);
             eventManager.fireClearSuccess(new BoardEvent() {
                 @Override
                 public Gem[] getGems() {
-                    return clearGems.toArray(Gem.class);
+                    return clearGems;
                 }
 
                 @Override
@@ -318,36 +302,32 @@ public class BoardController implements Board {
             });
             // free celarGems in the pool
         } else {
+            setReadyGems(fallGems);
 //            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
-            gemArrayPool.free(gems); // setting free fallGems from fall(...)
-            gemArrayPool.free(clearGems);
+//            gemArrayPool.free(gems); // setting free fallGems from fall(...)
+//            gemArrayPool.free(clearGems);
         }
 
     }
 
     /**
-     *  Helper methods
+     * Helper methods
      */
 
-    /**
-     * Swaps indexes in the gems array and also swaps both gems positions
-     *
-     * @param fromIndex index of forst gem to swap
-     * @param toIndex   index of second gem to swap
-     */
-    private void swapSynchronized(int fromIndex, int toIndex) {
-        getGems().swap(fromIndex, toIndex);
-        synchronizeGemPosition(fromIndex);
-        synchronizeGemPosition(toIndex);
-    }
-
-    private void blockGems(Array<Gem> gems) {
+    private void blockGems(Gem... gems) {
         for (Gem gem : gems) {
             gem.block();
         }
     }
 
-    private Gem resolveUnclearedGem(Array<Gem> gems, Gem fromGem, Gem toGem) {
+    private void setReadyGems(Gem... gems) {
+        for (Gem gem : gems) {
+            gem.setReady();
+        }
+    }
+
+    private Gem resolveUnclearedGem(Gem fromGem, Gem toGem, Gem... clearGems) {
+        Array<Gem> gems = new Array<Gem>(clearGems); // TODO
         Gem unclearedGem; // during swap and clearfinding on from 2 gems must not be cleared
         if (!gems.contains(fromGem, false)) {
             unclearedGem = fromGem;
@@ -357,80 +337,6 @@ public class BoardController implements Board {
             unclearedGem = null;
         }
         return unclearedGem;
-    }
-
-    private Array<Gem> populateClearGems(Gem baseGem, Array<Gem> gems, GemType gemType) {
-        Array<Gem> upClearArray = resolveClear(baseGem, 0f, 1f);  // up
-        Array<Gem> downClearArray = resolveClear(baseGem, 0f, -1f); // down
-
-        if (upClearArray.size + downClearArray.size >= 2) {
-            gems.add(baseGem);
-            gems.addAll(upClearArray);
-            gems.addAll(downClearArray);
-        }
-        gemArrayPool.free(upClearArray);
-        gemArrayPool.free(downClearArray);
-
-        Array<Gem> rightClearArray = resolveClear(baseGem, 1f, 0f);  // right
-        Array<Gem> leftClearArray = resolveClear(baseGem, -1f, 0f); // left
-        if (rightClearArray.size + leftClearArray.size >= 2) {
-            if (!gems.contains(baseGem, false)) {
-                gems.add(baseGem);
-            }
-            gems.addAll(rightClearArray);
-            gems.addAll(leftClearArray);
-        }
-        gemArrayPool.free(rightClearArray);
-        gemArrayPool.free(leftClearArray);
-
-        return gems;
-    }
-
-    private Array<Gem> resolveClear(Gem actualGem, float directionX, float directionY) {
-        int actualBoardIndex = actualGem.getIndex();
-        float nextX = actualGem.getX() + directionX;
-        float nextY = actualGem.getY() + directionY;
-        int nextBoardIndex = helper.createGemBoardIndex(nextX, nextY);
-        if (helper.areNeighborIndexes(actualBoardIndex, nextBoardIndex) && helper.areSameType(actualGem, findGem(nextBoardIndex))) {
-            Array<Gem> gemArray = resolveClear(findGem(nextBoardIndex), directionX, directionY);
-            gemArray.add(findGem(nextBoardIndex));
-            return gemArray;
-        } else {
-            return gemArrayPool.obtain();
-        }
-    }
-
-    /**
-     * Moving the gem in its column from original position(0, 1, ..., height)
-     * to top(height). The gem is repeatedly swaped with every above
-     * gem till it reaches the top. So every gem above the first should be
-     * moved below its original position.
-     */
-    private void moveGemToTop(int gemIndex, Array<Gem> fallGems) {
-        int aboveGemIndex = helper.getAboveNeighborIndex(gemIndex);
-        if (helper.isValidIndex(gemIndex) && helper.isValidIndex(aboveGemIndex)) {
-            swapSynchronized(gemIndex, aboveGemIndex);
-            moveGemToTop(aboveGemIndex, fallGems);
-        }
-        Gem gem = findGem(gemIndex); // TODO: refactor
-        if (!fallGems.contains(gem, false)) { // maybe a Set would be better, to prevent duplicate items
-            gem.block();
-            fallGems.add(gem);
-        }
-    }
-
-    private Gem synchronizeGemPosition(int boardIndex) {
-        Gem gem = findGem(boardIndex);
-        gem.setIndex(boardIndex);
-        return gem;
-    }
-
-    private Gem findGem(int boardIndex) {
-        Gem gem = getGems().get(boardIndex);
-        if (gem == null) {
-            throw new RuntimeException("Gem on boardIndex position doesn't exist!");
-        }
-        return gem;
     }
 
 

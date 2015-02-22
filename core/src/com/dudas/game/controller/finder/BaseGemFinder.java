@@ -1,6 +1,7 @@
 package com.dudas.game.controller.finder;
 
 import com.badlogic.gdx.utils.Array;
+import com.dudas.game.controller.helper.BoardHelper;
 import com.dudas.game.model.Gem;
 
 /**
@@ -8,5 +9,14 @@ import com.dudas.game.model.Gem;
  */
 public abstract class BaseGemFinder implements GemFinder {
 
-    public abstract Array<Gem> find(Array<Gem> gems);
+    protected Array<Gem> boardGems;
+    protected BoardHelper helper;
+
+    public BaseGemFinder(Array<Gem> boardGems, BoardHelper helper) {
+        this.boardGems = boardGems;
+        this.helper = helper;
+    }
+
+    public abstract Gem[] find(Gem... gems);
+
 }

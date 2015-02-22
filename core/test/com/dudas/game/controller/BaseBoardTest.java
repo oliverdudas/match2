@@ -40,6 +40,7 @@ public abstract class BaseBoardTest {
 
     @Before
     public void setUp() throws Exception {
+        pixmapGemsProvider = new PixmapGemsProvider(TESTBOARD_PNG);
         expectedFallEvents = new Array<ExpectedFallEvent>();
         expectedClearSuccessEvents = new Array<ExpectedClearSuccessEvent>();
         expectedFinalBoard = TESTBOARD_PNG;

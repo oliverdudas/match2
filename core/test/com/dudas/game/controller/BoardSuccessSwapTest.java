@@ -18,7 +18,6 @@ public class BoardSuccessSwapTest extends BaseFallBoardTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        pixmapGemsProvider = new PixmapGemsProvider(TESTBOARD_PNG);
         board = new BoardController(
                 Constants.BOARD_WIDTH,
                 Constants.BOARD_HEIGHT,
@@ -29,7 +28,7 @@ public class BoardSuccessSwapTest extends BaseFallBoardTest {
 
     @Test
     public void testHorizontal3ClearFlow() throws Exception {
-        pixmapGemsProvider.mockRandomGemTypes(GemType.RED, GemType.YELLOW, GemType.GREEN);
+        pixmapGemsProvider.mockRandomGemTypes(GemType.RED, GemType.GREEN, GemType.YELLOW);
         expectedSwapGem1Type = GemType.ORANGE;
         expectedSwapGem2Type = GemType.PURPLE;
         expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(3, GemType.ORANGE));
@@ -61,7 +60,7 @@ public class BoardSuccessSwapTest extends BaseFallBoardTest {
         expectedSwapGem2Type = GemType.GREEN;
         expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(3, GemType.ORANGE));
         expectedFallEvents.add(new ExpectedFallEvent().withGemsSize(3));
-        expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(6, GemType.RED));
+        expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(3, GemType.RED));
         expectedFallEvents.add(new ExpectedFallEvent().withGemsSize(4));
         expectedFinalBoard = EXPECTED_BOARD_AFTER_2X3CLEAR_IN_SEQUENZE_FLOW_PNG;
 

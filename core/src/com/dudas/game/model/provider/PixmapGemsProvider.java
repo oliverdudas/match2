@@ -83,6 +83,7 @@ public class PixmapGemsProvider implements GemsProvider {
     public void mockRandomGemTypes(GemType... gemTypes) {
         if (gemTypeStack == null) {
             gemTypeStack = new Array<GemType>();
+            gemTypeStack.sort();
         }
 
         gemTypeStack.addAll(gemTypes);
