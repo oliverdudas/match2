@@ -1,14 +1,18 @@
 package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.Pool;
-import com.dudas.game.Board;
-import com.dudas.game.EventManager;
-import com.dudas.game.Gem;
-import com.dudas.game.exception.NeighborException;
+import com.dudas.game.controller.event.EventManager;
+import com.dudas.game.model.Gem;
+import com.dudas.game.controller.event.BoardEvent;
+import com.dudas.game.controller.event.BoardEventListener;
+import com.dudas.game.controller.event.BoardEventManager;
+import com.dudas.game.controller.event.TwoGemsBoardEvent;
+import com.dudas.game.controller.helper.BoardHelper;
+import com.dudas.game.controller.helper.DefaultBoardHelper;
 import com.dudas.game.model.GemType;
-import com.dudas.game.provider.GemsProvider;
+import com.dudas.game.model.provider.GemsProvider;
+import com.dudas.game.model.provider.TestGemsProvider;
 
 /**
  * Created by foxy on 04/02/2015.
@@ -20,31 +24,35 @@ public class BoardController implements Board {
     private final float width;
     private final float height;
 
-    private EventManager eventManager;
     private GemsProvider gemsProvider;
+    private EventManager eventManager;
+    private BoardHelper helper;
 
     private Pool<Array<Gem>> gemArrayPool;
-    private IntArray topBorderIndexes;
-    private float maxBoardIndex;
-    private float minBoardIndex;
 
     public BoardController(float width, float height) {
+        this(width, height, new TestGemsProvider());
+    }
+
+    public BoardController(float width, float height, GemsProvider provider) {
+        this(width, height, provider, new BoardEventManager(), new DefaultBoardHelper(width, height));
+    }
+
+    public BoardController(float width, float height, GemsProvider gemsProvider, EventManager eventManager) {
+        this(width, height, gemsProvider, eventManager, new DefaultBoardHelper(width, height));
+    }
+
+    public BoardController(float width, float height, GemsProvider provider, EventManager eventManager, BoardHelper helper) {
         this.width = width;
         this.height = height;
+        this.gemsProvider = provider;
+        this.eventManager = eventManager;
+        this.helper = helper;
         init();
     }
 
-    public BoardController(float width, float height, GemsProvider provider, EventManager eventManager) {
-        this(width, height);
-        this.gemsProvider = provider;
-        this.eventManager = eventManager;
-    }
-
     private void init() {
-        maxBoardIndex = width * height - 1;
-        minBoardIndex = 0;
         initGemArrayPool();
-        initTopBorderIndexes();
 //        initRightBorderIndexes();
     }
 
@@ -63,19 +71,13 @@ public class BoardController implements Board {
         };
     }
 
-    private void initTopBorderIndexes() {
-        topBorderIndexes = new IntArray((int) width);
-        for (int i = 1; i <= width; i++) {
-            topBorderIndexes.add((int) width * i - 1);
-        }
-    }
-
     /**
      * API methods
      */
 
     /**
      * Returns all board gems
+     *
      * @return all board gems
      */
     @Override
@@ -85,6 +87,7 @@ public class BoardController implements Board {
 
     /**
      * Sets gems provider which provides all board gems
+     *
      * @param provider provides all board gems
      */
     @Override
@@ -94,6 +97,7 @@ public class BoardController implements Board {
 
     /**
      * Sets the event listener
+     *
      * @param matchGameListener listens for board events
      */
     @Override
@@ -103,6 +107,7 @@ public class BoardController implements Board {
 
     /**
      * The board width
+     *
      * @return board width
      */
     @Override
@@ -112,6 +117,7 @@ public class BoardController implements Board {
 
     /**
      * The board height
+     *
      * @return board height
      */
     @Override
@@ -121,6 +127,7 @@ public class BoardController implements Board {
 
     /**
      * Sets event manager which handles all events produces by flow methods
+     *
      * @param eventManager handles all events produces by flow methods
      */
     @Override
@@ -135,17 +142,18 @@ public class BoardController implements Board {
     /**
      * Swaps two gems.
      * This is the entry point for game.
+     *
      * @param fromX is the x coordinate of first gem
      * @param fromY is the y coordinate of first gem
-     * @param toX is the x coordinate of second gem
-     * @param toY is the y coordinate of second gem
+     * @param toX   is the x coordinate of second gem
+     * @param toY   is the y coordinate of second gem
      */
     @Override
     public void swap(float fromX, float fromY, float toX, float toY) {
-        checkNeighborCoordinates(fromX, fromY, toX, toY);
+        helper.checkNeighborCoordinates(fromX, fromY, toX, toY);
 
-        int fromIndex = createGemBoardIndex(fromX, fromY);
-        int toIndex = createGemBoardIndex(toX, toY);
+        int fromIndex = helper.createGemBoardIndex(fromX, fromY);
+        int toIndex = helper.createGemBoardIndex(toX, toY);
         swapSynchronized(fromIndex, toIndex);
 
         final Gem toGem = findGem(toIndex);
@@ -168,7 +176,7 @@ public class BoardController implements Board {
 
             @Override
             public Gem[] getGems() {
-                return new Gem[] {getToGem(), getFromGem()};
+                return new Gem[]{getToGem(), getFromGem()};
             }
 
             @Override
@@ -249,7 +257,7 @@ public class BoardController implements Board {
 
                 @Override
                 public Gem[] getGems() {
-                    return new Gem[] {getFromGem(), getToGem()};
+                    return new Gem[]{getFromGem(), getToGem()};
                 }
 
                 @Override
@@ -352,8 +360,8 @@ public class BoardController implements Board {
     }
 
     private Array<Gem> populateClearGems(Gem baseGem, Array<Gem> gems, GemType gemType) {
-        Array<Gem> upClearArray = resolveClear(baseGem, 0f, 1f, gemType);  // up
-        Array<Gem> downClearArray = resolveClear(baseGem, 0f, -1f, gemType); // down
+        Array<Gem> upClearArray = resolveClear(baseGem, 0f, 1f);  // up
+        Array<Gem> downClearArray = resolveClear(baseGem, 0f, -1f); // down
 
         if (upClearArray.size + downClearArray.size >= 2) {
             gems.add(baseGem);
@@ -363,8 +371,8 @@ public class BoardController implements Board {
         gemArrayPool.free(upClearArray);
         gemArrayPool.free(downClearArray);
 
-        Array<Gem> rightClearArray = resolveClear(baseGem, 1f, 0f, gemType);  // right
-        Array<Gem> leftClearArray = resolveClear(baseGem, -1f, 0f, gemType); // left
+        Array<Gem> rightClearArray = resolveClear(baseGem, 1f, 0f);  // right
+        Array<Gem> leftClearArray = resolveClear(baseGem, -1f, 0f); // left
         if (rightClearArray.size + leftClearArray.size >= 2) {
             if (!gems.contains(baseGem, false)) {
                 gems.add(baseGem);
@@ -378,22 +386,18 @@ public class BoardController implements Board {
         return gems;
     }
 
-    private Array<Gem> resolveClear(Gem actualGem, float directionX, float directionY, GemType gemType) {
+    private Array<Gem> resolveClear(Gem actualGem, float directionX, float directionY) {
         int actualBoardIndex = actualGem.getIndex();
         float nextX = actualGem.getX() + directionX;
         float nextY = actualGem.getY() + directionY;
-        int nextBoardIndex = createGemBoardIndex(nextX, nextY);
-        if (areNeighborIndexes(actualBoardIndex, nextBoardIndex) && areTheSameType(gemType, findGem(nextBoardIndex).getType())) {
-            Array<Gem> gemArray = resolveClear(findGem(nextBoardIndex), directionX, directionY, gemType);
+        int nextBoardIndex = helper.createGemBoardIndex(nextX, nextY);
+        if (helper.areNeighborIndexes(actualBoardIndex, nextBoardIndex) && helper.areSameType(actualGem, findGem(nextBoardIndex))) {
+            Array<Gem> gemArray = resolveClear(findGem(nextBoardIndex), directionX, directionY);
             gemArray.add(findGem(nextBoardIndex));
             return gemArray;
         } else {
             return gemArrayPool.obtain();
         }
-    }
-
-    private boolean areTheSameType(GemType gemType, GemType type) {
-        return gemType.equals(type);
     }
 
     /**
@@ -403,8 +407,8 @@ public class BoardController implements Board {
      * moved below its original position.
      */
     private void moveGemToTop(int gemIndex, Array<Gem> fallGems) {
-        int aboveGemIndex = getAboveNeighborIndex(gemIndex);
-        if (isValidIndex(gemIndex) && isValidIndex(aboveGemIndex)) {
+        int aboveGemIndex = helper.getAboveNeighborIndex(gemIndex);
+        if (helper.isValidIndex(gemIndex) && helper.isValidIndex(aboveGemIndex)) {
             swapSynchronized(gemIndex, aboveGemIndex);
             moveGemToTop(aboveGemIndex, fallGems);
         }
@@ -421,10 +425,6 @@ public class BoardController implements Board {
         return gem;
     }
 
-    private int createGemBoardIndex(float x, float y) {
-        return (int) (x * width + y);
-    }
-
     private Gem findGem(int boardIndex) {
         Gem gem = getGems().get(boardIndex);
         if (gem == null) {
@@ -433,56 +433,5 @@ public class BoardController implements Board {
         return gem;
     }
 
-    private IntArray getNeighborIndexes(int gemIndex) {
-        IntArray neighborIndexes = new IntArray(4);
-        neighborIndexes.add(getRightNeighborIndex(gemIndex));
-        neighborIndexes.add(getBelowNeighborIndex(gemIndex));
-        neighborIndexes.add(getLeftNeighborIndex(gemIndex));
-        neighborIndexes.add(getAboveNeighborIndex(gemIndex));
-        return neighborIndexes;
-    }
 
-    private int getAboveNeighborIndex(int gemIndex) {
-        int above = gemIndex + 1;
-        return isValidIndex(above) && isNotTopBoardIndex(gemIndex) ? above : -1;
-    }
-
-    private int getLeftNeighborIndex(int gemIndex) {
-        int left = gemIndex - (int) height;
-        return isValidIndex(left) ? left : -1;
-    }
-
-    private int getBelowNeighborIndex(int gemIndex) {
-        int below = gemIndex - 1;
-        return isValidIndex(below) && isNotTopBoardIndex(below) ? below : -1;
-    }
-
-    private int getRightNeighborIndex(int gemIndex) {
-        int right = gemIndex + (int) height;
-        return isValidIndex(right) ? right : -1;
-    }
-
-    private boolean isNotTopBoardIndex(int below) {
-        return !topBorderIndexes.contains(below);
-    }
-
-    private boolean isValidIndex(int index) {
-        return index >= minBoardIndex && index <= maxBoardIndex;
-    }
-
-    private void checkNeighborCoordinates(float fromX, float fromY, float toX, float toY) {
-        if (!areNeighborCoordinates(fromX, fromY, toX, toY)) {
-            throw new NeighborException();
-        }
-    }
-
-    private boolean areNeighborCoordinates(float fromX, float fromY, float toX, float toY) {
-        int fromIndex = createGemBoardIndex(fromX, fromY);
-        int toIndex = createGemBoardIndex(toX, toY);
-        return areNeighborIndexes(fromIndex, toIndex);
-    }
-
-    private boolean areNeighborIndexes(int fromIndex, int toIndex) {
-        return isValidIndex(fromIndex) && isValidIndex(toIndex) && getNeighborIndexes(fromIndex).contains(toIndex);
-    }
 }

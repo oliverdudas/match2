@@ -1,6 +1,7 @@
 package com.dudas.game.stage;
 
 import com.dudas.game.controller.BoardController;
+import com.dudas.game.stage.renderer.BoardEventRenderer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

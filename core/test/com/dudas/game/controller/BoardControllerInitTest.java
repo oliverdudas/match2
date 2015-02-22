@@ -1,7 +1,7 @@
 package com.dudas.game.controller;
 
 import com.dudas.game.Constants;
-import com.dudas.game.provider.TestGemsProvider;
+import com.dudas.game.model.provider.TestGemsProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,8 +17,11 @@ public class BoardControllerInitTest {
 
     @Before
     public void setUp() throws Exception {
-        boardController = new BoardController(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT);
-        boardController.setGemsProvider(new TestGemsProvider());
+        boardController = new BoardController(
+                Constants.BOARD_WIDTH,
+                Constants.BOARD_HEIGHT,
+                new TestGemsProvider()
+        );
     }
 
     @Test

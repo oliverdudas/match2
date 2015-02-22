@@ -1,7 +1,6 @@
 package com.dudas.game.model;
 
 import com.badlogic.gdx.math.MathUtils;
-import com.dudas.game.Gem;
 
 /**
  * Created by OLO on 17. 2. 2015

@@ -1,7 +1,7 @@
 package com.dudas.game.performance;
 
 import com.badlogic.gdx.utils.Array;
-import com.dudas.game.Gem;
+import com.dudas.game.model.Gem;
 import com.dudas.game.model.GemModel;
 import com.dudas.game.model.GemType;
 import org.junit.Test;

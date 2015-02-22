@@ -1,5 +1,6 @@
 package com.dudas.game.controller;
 
+import com.dudas.game.controller.event.TwoGemsBoardEvent;
 import org.mockito.ArgumentCaptor;
 
 import static org.junit.Assert.*;

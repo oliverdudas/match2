@@ -1,7 +1,5 @@
 package com.dudas.game.model;
 
-import com.dudas.game.Gem;
-
 /**
  * Created by foxy on 04/02/2015.
  */

@@ -1,12 +1,11 @@
 package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
-import com.dudas.game.Board;
-import com.dudas.game.EventManager;
-import com.dudas.game.Gem;
+import com.dudas.game.controller.event.EventManager;
+import com.dudas.game.model.Gem;
+import com.dudas.game.controller.event.TwoGemsBoardEvent;
 import com.dudas.game.model.GemType;
-import com.dudas.game.provider.GemsProvider;
-import com.dudas.game.provider.PixmapGemsProvider;
+import com.dudas.game.model.provider.PixmapGemsProvider;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -29,18 +28,20 @@ public abstract class BaseBoardTest {
 
     @Mock
     protected EventManager eventManager;
-    protected Board board;
 
-    protected ExpectedFallEvent expectedFallEvent;
-    protected ExpectedClearSuccessEvent expectedClearSuccessEvent;
+    protected Board board;
+    protected PixmapGemsProvider pixmapGemsProvider;
+
+    protected Array<ExpectedFallEvent> expectedFallEvents;
+    protected Array<ExpectedClearSuccessEvent> expectedClearSuccessEvents;
     protected String expectedFinalBoard;
     protected GemType expectedSwapGem1Type;
     protected GemType expectedSwapGem2Type;
 
     @Before
     public void setUp() throws Exception {
-        expectedFallEvent = new ExpectedFallEvent();
-        expectedClearSuccessEvent = new ExpectedClearSuccessEvent();
+        expectedFallEvents = new Array<ExpectedFallEvent>();
+        expectedClearSuccessEvents = new Array<ExpectedClearSuccessEvent>();
         expectedFinalBoard = TESTBOARD_PNG;
         expectedSwapGem1Type = GemType.EMPTY;
         expectedSwapGem2Type = GemType.EMPTY;
@@ -96,6 +97,15 @@ public abstract class BaseBoardTest {
         public ExpectedFallEvent() {
             gemsSize = 0;
         }
+
+        public ExpectedFallEvent withGemsSize(int gemsSize) {
+            this.gemsSize = gemsSize;
+            return this;
+        }
+
+        public void discard() {
+            expectedFallEvents.removeValue(this, false);
+        }
     }
 
     protected class ExpectedClearSuccessEvent {
@@ -105,8 +115,9 @@ public abstract class BaseBoardTest {
             lengthWithTypeList = new ArrayList<LengthWithType>();
         }
 
-        public void addLengthWithType(int length, GemType type) {
+        public ExpectedClearSuccessEvent addLengthWithType(int length, GemType type) {
             lengthWithTypeList.add(new LengthWithType(length, type));
+            return this;
         }
 
         protected class LengthWithType {
@@ -117,6 +128,10 @@ public abstract class BaseBoardTest {
                 this.expectedLength = length;
                 this.expectedType = type;
             }
+        }
+
+        public void discard() {
+            expectedClearSuccessEvents.removeValue(this, false);
         }
     }
 }
