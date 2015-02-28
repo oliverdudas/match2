@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.controller.event.*;
 import com.dudas.game.controller.finder.ClearFinder;
+import com.dudas.game.controller.finder.FallBelowFinder;
 import com.dudas.game.controller.finder.FallFinder;
 import com.dudas.game.controller.helper.BoardHelper;
 import com.dudas.game.controller.helper.DefaultBoardHelper;
@@ -102,6 +103,11 @@ public class BoardController implements Board {
         eventManager.attach(matchGameListener);
     }
 
+    @Override
+    public void reset() {
+        gemsProvider.reset();
+    }
+
     /**
      * The board width
      *
@@ -184,8 +190,8 @@ public class BoardController implements Board {
     }
 
     private void backSwap(final Gem fromGem, final Gem toGem) {
-        int fromIndex = fromGem.getIndex();
-        int toIndex = toGem.getIndex();
+        int fromIndex = fromGem.getIndex(getHeight());
+        int toIndex = toGem.getIndex(getHeight());
         helper.swapSynchronized(fromIndex, toIndex, getGems());
 
         eventManager.fireBackSwap(new TwoGemsBoardEvent() {
@@ -208,6 +214,7 @@ public class BoardController implements Board {
             public void complete() {
                 getFromGem().setReady();
                 getToGem().setReady();
+                fallBelow(getFromGem(), getToGem());
             }
         });
     }
@@ -219,6 +226,10 @@ public class BoardController implements Board {
         if (clearGems.length >= 3) {
             blockGems(clearGems);
             final Gem unclearedGem = resolveUnclearedGem(fromGem, toGem, clearGems);
+            if (unclearedGem != null) {
+                unclearedGem.setReady();
+                fallBelow(unclearedGem);
+            }
             eventManager.fireClearSuccess(new BoardEvent() {
                 @Override
                 public Gem[] getGems() {
@@ -227,9 +238,6 @@ public class BoardController implements Board {
 
                 @Override
                 public void complete() {
-                    if (unclearedGem != null) {
-                        unclearedGem.setReady();
-                    }
                     fall(clearGems);
                 }
             });
@@ -271,6 +279,7 @@ public class BoardController implements Board {
 
             @Override
             public void complete() {
+                setReadyGems(fallGems);
                 resetNewGems(clearedGems);
                 clearFallen(fallGems);
             }
@@ -302,12 +311,21 @@ public class BoardController implements Board {
             });
             // free celarGems in the pool
         } else {
-            setReadyGems(fallGems);
-//            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
+            fallBelow(fallGems);
 //            gemArrayPool.free(gems); // setting free fallGems from fall(...)
 //            gemArrayPool.free(clearGems);
         }
 
+    }
+
+    private void fallBelow(Gem... fallGems) {
+        FallBelowFinder fallBelowFinder = new FallBelowFinder(getGems(), helper, gemsProvider);
+        Gem[] fallBelowGems = fallBelowFinder.find(fallGems);
+        if (fallBelowGems.length > 0) {
+            fall(fallBelowGems);
+        } else {
+//            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
+        }
     }
 
     /**

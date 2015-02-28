@@ -17,6 +17,7 @@ public class BoardFailedSwapTest extends BaseSwapBoardTest {
 
     @Before
     public void setUp() throws Exception {
+        super.setUp();
         board = new BoardController(
                 Constants.BOARD_WIDTH,
                 Constants.BOARD_HEIGHT,
@@ -72,8 +73,8 @@ public class BoardFailedSwapTest extends BaseSwapBoardTest {
 
     @Test
     public void testUpNeighborSwapFlow() throws Exception {
-        expectedSwapGem1Type = GemType.BLUE;
-        expectedSwapGem2Type = GemType.RED;
+        expectedSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.BLUE, GemType.RED));
+        expectedBackSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.BLUE, GemType.RED));
         expectedFinalBoard = TESTBOARD_PNG;
 
         verifyBackSwapFlow(0, 0, 0, 1);
@@ -81,8 +82,8 @@ public class BoardFailedSwapTest extends BaseSwapBoardTest {
 
     @Test
     public void testRightNighborSwapFlow() throws Exception {
-        expectedSwapGem1Type = GemType.BLUE;
-        expectedSwapGem2Type = GemType.YELLOW;
+        expectedSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.BLUE, GemType.YELLOW));
+        expectedBackSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.BLUE, GemType.YELLOW));
         expectedFinalBoard = TESTBOARD_PNG;
 
         verifyBackSwapFlow(1, 0, 2, 0);
@@ -90,8 +91,8 @@ public class BoardFailedSwapTest extends BaseSwapBoardTest {
 
     @Test
     public void testDownNighborSwapFlow() throws Exception {
-        expectedSwapGem1Type = GemType.RED;
-        expectedSwapGem2Type = GemType.BLUE;
+        expectedSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.RED, GemType.BLUE));
+        expectedBackSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.RED, GemType.BLUE));
         expectedFinalBoard = TESTBOARD_PNG;
 
         verifyBackSwapFlow(1, 1, 1, 0);
@@ -99,8 +100,8 @@ public class BoardFailedSwapTest extends BaseSwapBoardTest {
 
     @Test
     public void testLeftNighborSwapFlow() throws Exception {
-        expectedSwapGem1Type = GemType.BLUE;
-        expectedSwapGem2Type = GemType.BLUE;
+        expectedSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.BLUE, GemType.BLUE));
+        expectedBackSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.BLUE, GemType.BLUE));
         expectedFinalBoard = TESTBOARD_PNG;
 
         verifyBackSwapFlow(1, 0, 0, 0);

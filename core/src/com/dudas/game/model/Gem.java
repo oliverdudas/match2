@@ -16,9 +16,9 @@ public interface Gem {
 
     void setY(float y);
 
-    int getIndex();
+    int getIndex(float height);
 
-    void setIndex(int index);
+    void setIndex(int index, int height);
 
     GemType getType();
 

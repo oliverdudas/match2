@@ -1,6 +1,7 @@
 package com.dudas.game.stage;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -79,6 +80,15 @@ public class GameStage extends Stage {
         removeSelection();
         enableSwap();
         return true;
+    }
+
+    @Override
+    public boolean keyUp(int keyCode) {
+        if (Input.Keys.R == keyCode) {
+            board.reset();   //TODO
+            init();
+        }
+        return super.keyUp(keyCode);
     }
 
     private void removeSelection() {

@@ -79,6 +79,7 @@ public class Assets implements Disposable, AssetErrorListener {
         public final TextureAtlas.AtlasRegion yellow;
         public final TextureAtlas.AtlasRegion orange;
         public final TextureAtlas.AtlasRegion purple;
+        public final TextureAtlas.AtlasRegion empty;
 
         public AssetGems(TextureAtlas atlas) {
             red = atlas.findRegion("red_square");
@@ -87,6 +88,7 @@ public class Assets implements Disposable, AssetErrorListener {
             yellow = atlas.findRegion("yellow_square");
             orange = atlas.findRegion("orange_square");
             purple = atlas.findRegion("purple_square");
+            empty = atlas.findRegion("empty_square");
         }
     }
 

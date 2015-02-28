@@ -25,13 +25,13 @@ public class GemModel implements Gem {
         BLOCKED
     }
 
-    public int getIndex() {
-        return (int) (x * 9 + y);
+    public int getIndex(float height) {
+        return (int) (x * (int) height + y);
     }
 
-    public void setIndex(int index) {
-        x = index / 9;
-        y = index % 9;
+    public void setIndex(int index, int height) {
+        x = index / height;
+        y = index % height;
     }
 
     public float getX() {

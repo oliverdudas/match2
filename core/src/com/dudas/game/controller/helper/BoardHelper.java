@@ -8,6 +8,10 @@ import com.dudas.game.model.Gem;
  * Created by OLO on 22. 2. 2015
  */
 public interface BoardHelper {
+    float getWidth();
+
+    float getHeight();
+
     Gem findGem(int boardIndex, Array<Gem> boardGems);
 
     void swapSynchronized(int fromIndex, int toIndex, Array<Gem> boardGems);
@@ -15,6 +19,8 @@ public interface BoardHelper {
     Gem synchronizeGemPosition(int boardIndex, Array<Gem> boardGems);
 
     boolean isNotTopBoardIndex(int below);
+
+    boolean isTopBoardIndex(int below);
 
     boolean areSameType(Gem gemType1, Gem gemType2);
 

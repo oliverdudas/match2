@@ -2,7 +2,6 @@ package com.dudas.game.controller;
 
 import com.dudas.game.Constants;
 import com.dudas.game.model.GemType;
-import com.dudas.game.model.provider.PixmapGemsProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,8 +28,7 @@ public class BoardSuccessSwapTest extends BaseFallBoardTest {
     @Test
     public void testHorizontal3ClearFlow() throws Exception {
         pixmapGemsProvider.mockRandomGemTypes(GemType.RED, GemType.GREEN, GemType.YELLOW);
-        expectedSwapGem1Type = GemType.ORANGE;
-        expectedSwapGem2Type = GemType.PURPLE;
+        expectedSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.ORANGE, GemType.PURPLE));
         expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(3, GemType.ORANGE));
         expectedFallEvents.add(new ExpectedFallEvent().withGemsSize(6));
         expectedFinalBoard = EXPECTED_BOARD_AFTER_HORIZONTAL_SIMPLE_FALL_FLOW_PNG;
@@ -41,8 +39,7 @@ public class BoardSuccessSwapTest extends BaseFallBoardTest {
     @Test
     public void testVertical3ClearFlow() throws Exception {
         pixmapGemsProvider.mockRandomGemTypes(GemType.RED, GemType.YELLOW, GemType.GREEN);
-        expectedSwapGem1Type = GemType.PURPLE;
-        expectedSwapGem2Type = GemType.BLUE;
+        expectedSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.PURPLE, GemType.BLUE));
         expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(3, GemType.PURPLE));
         expectedFallEvents.add(new ExpectedFallEvent().withGemsSize(9));
         expectedFinalBoard = EXPECTED_BOARD_AFTER_VERTICAL_SIMPLE_FALL_FLOW_PNG;
@@ -56,8 +53,7 @@ public class BoardSuccessSwapTest extends BaseFallBoardTest {
                 GemType.RED, GemType.RED, GemType.PURPLE,
                 GemType.YELLOW, GemType.BLUE, GemType.GREEN
         );
-        expectedSwapGem1Type = GemType.ORANGE;
-        expectedSwapGem2Type = GemType.GREEN;
+        expectedSwapEvents.add(new ExpectedSwapEvent().withSwapTypes(GemType.ORANGE, GemType.GREEN));
         expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(3, GemType.ORANGE));
         expectedFallEvents.add(new ExpectedFallEvent().withGemsSize(3));
         expectedClearSuccessEvents.add(new ExpectedClearSuccessEvent().addLengthWithType(3, GemType.RED));

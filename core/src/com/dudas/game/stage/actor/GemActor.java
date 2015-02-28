@@ -54,6 +54,8 @@ public class GemActor extends Actor {
                 return Assets.instance.assetGems.yellow;
             case ORANGE:
                 return Assets.instance.assetGems.orange;
+            case EMPTY:
+                return Assets.instance.assetGems.empty;
         }
         throw new RuntimeException("There is no region for gemType: " + type.name());
     }

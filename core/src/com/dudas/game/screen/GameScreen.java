@@ -8,6 +8,7 @@ import com.dudas.game.Constants;
 import com.dudas.game.controller.BoardController;
 import com.dudas.game.controller.event.BoardEventManager;
 import com.dudas.game.controller.helper.DefaultBoardHelper;
+import com.dudas.game.model.provider.RandomGemsProvider;
 import com.dudas.game.model.provider.TestGemsProvider;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.MainStage;
@@ -57,6 +58,7 @@ public class GameScreen extends AbstractGameScreen {
                 Constants.BOARD_WIDTH,
                 Constants.BOARD_HEIGHT,
                 new TestGemsProvider(),
+//                new RandomGemsProvider(),
                 new BoardEventManager(),
                 new DefaultBoardHelper(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT)
         );

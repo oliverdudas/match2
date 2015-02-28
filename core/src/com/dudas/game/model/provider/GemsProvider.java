@@ -12,4 +12,6 @@ public interface GemsProvider {
     Array<Gem> getGems(float width, float height);
 
     GemType getRandomGemType();
+
+    void reset();
 }

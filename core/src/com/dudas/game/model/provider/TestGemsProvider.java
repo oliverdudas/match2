@@ -117,4 +117,9 @@ public class TestGemsProvider implements GemsProvider {
         return GemType.getRandom();
     }
 
+    @Override
+    public void reset() {
+        gems = null;
+    }
+
 }

@@ -32,20 +32,20 @@ public abstract class BaseBoardTest {
     protected Board board;
     protected PixmapGemsProvider pixmapGemsProvider;
 
+    protected Array<ExpectedSwapEvent> expectedSwapEvents;
+    protected Array<ExpectedSwapEvent> expectedBackSwapEvents;
     protected Array<ExpectedFallEvent> expectedFallEvents;
     protected Array<ExpectedClearSuccessEvent> expectedClearSuccessEvents;
     protected String expectedFinalBoard;
-    protected GemType expectedSwapGem1Type;
-    protected GemType expectedSwapGem2Type;
 
     @Before
     public void setUp() throws Exception {
         pixmapGemsProvider = new PixmapGemsProvider(TESTBOARD_PNG);
+        expectedSwapEvents = new Array<ExpectedSwapEvent>();
+        expectedBackSwapEvents = new Array<ExpectedSwapEvent>();
         expectedFallEvents = new Array<ExpectedFallEvent>();
         expectedClearSuccessEvents = new Array<ExpectedClearSuccessEvent>();
         expectedFinalBoard = TESTBOARD_PNG;
-        expectedSwapGem1Type = GemType.EMPTY;
-        expectedSwapGem2Type = GemType.EMPTY;
     }
 
     protected void verifySwapEvent(float x1, float y1, float x2, float y2) {
@@ -53,16 +53,20 @@ public abstract class BaseBoardTest {
         verify(eventManager).fireSwap(swapEventCaptor.capture());
         TwoGemsBoardEvent swapEvent = swapEventCaptor.getValue();
 
+        ExpectedSwapEvent expectedSwapEvent = expectedSwapEvents.get(0);
+
         assertNotNull(swapEvent);
         assertTrue(swapEvent.getFromGem().getX() == x1);
         assertTrue(swapEvent.getFromGem().getY() == y1);
         assertTrue(swapEvent.getFromGem().isBlocked());
-        assertEquals(expectedSwapGem2Type, swapEvent.getFromGem().getType());
+        assertEquals(expectedSwapEvent.type2, swapEvent.getFromGem().getType());
         assertTrue(swapEvent.getToGem().getX() == x2);
         assertTrue(swapEvent.getToGem().getY() == y2);
         assertTrue(swapEvent.getToGem().isBlocked());
-        assertEquals(expectedSwapGem1Type, swapEvent.getToGem().getType());
+        assertEquals(expectedSwapEvent.type1, swapEvent.getToGem().getType());
+
         swapEvent.complete();
+        expectedSwapEvent.discard();
     }
 
     protected void verifyBoard() {
@@ -70,7 +74,7 @@ public abstract class BaseBoardTest {
         for (Gem gem : board.getGems()) {
             int boardIndex = coordinatesToIndex(gem.getX(), gem.getY());
             Gem expectedGem = expectedGems.get(boardIndex);
-            assertTrue(expectedGem.getIndex() == gem.getIndex());
+            assertTrue(expectedGem.getIndex(board.getHeight()) == gem.getIndex(board.getHeight()));
             assertEquals(expectedGem.getType(), gem.getType());
             assertEquals(expectedGem.getState(), gem.getState());
         }
@@ -90,6 +94,26 @@ public abstract class BaseBoardTest {
 
     protected int coordinatesToIndex(float x, float y) {
         return (int) (x * board.getWidth() + y);
+    }
+
+    protected class ExpectedSwapEvent {
+        public GemType type1;
+        public GemType type2;
+
+        public ExpectedSwapEvent() {
+            this.type1 = GemType.EMPTY;
+            this.type2 = GemType.EMPTY;
+        }
+
+        public ExpectedSwapEvent withSwapTypes(GemType type1, GemType type2) {
+            this.type1 = type1;
+            this.type2 = type2;
+            return this;
+        }
+
+        public void discard() {
+            expectedSwapEvents.removeValue(this, false);
+        }
     }
 
     protected class ExpectedFallEvent {

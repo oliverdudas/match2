@@ -41,16 +41,21 @@ public abstract class BaseSwapBoardTest extends BaseBoardTest {
         ArgumentCaptor<TwoGemsBoardEvent> backSwapEventCaptor = ArgumentCaptor.forClass(TwoGemsBoardEvent.class);
         verify(eventManager).fireBackSwap(backSwapEventCaptor.capture());
         TwoGemsBoardEvent backSwapEvent = backSwapEventCaptor.getValue();
+
+        ExpectedSwapEvent expectedBackSwapEvent = expectedBackSwapEvents.get(0);
+
         assertNotNull(backSwapEvent);
         assertTrue(backSwapEvent.getFromGem().getX() == x2);
         assertTrue(backSwapEvent.getFromGem().getY() == y2);
         assertTrue(backSwapEvent.getFromGem().isBlocked());
-        assertEquals(expectedSwapGem2Type, backSwapEvent.getFromGem().getType());
+        assertEquals(expectedBackSwapEvent.type2, backSwapEvent.getFromGem().getType());
         assertTrue(backSwapEvent.getToGem().getX() == x1);
         assertTrue(backSwapEvent.getToGem().getY() == y1);
         assertTrue(backSwapEvent.getToGem().isBlocked());
-        assertEquals(expectedSwapGem1Type, backSwapEvent.getToGem().getType());
+        assertEquals(expectedBackSwapEvent.type1, backSwapEvent.getToGem().getType());
+
         backSwapEvent.complete();
+        expectedBackSwapEvent.discard();
     }
 
     /**
@@ -69,11 +74,10 @@ public abstract class BaseSwapBoardTest extends BaseBoardTest {
         assertTrue(clearFailEvent.getFromGem().getX() == x1);
         assertTrue(clearFailEvent.getFromGem().getY() == y1);
         assertTrue(clearFailEvent.getFromGem().isBlocked());
-        assertEquals(expectedSwapGem2Type, clearFailEvent.getFromGem().getType());
         assertTrue(clearFailEvent.getToGem().getX() == x2);
         assertTrue(clearFailEvent.getToGem().getY() == y2);
         assertTrue(clearFailEvent.getToGem().isBlocked());
-        assertEquals(expectedSwapGem1Type, clearFailEvent.getToGem().getType());
+
         clearFailEvent.complete();
     }
 

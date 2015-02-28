@@ -24,4 +24,6 @@ public interface Board {
     void setEventManager(EventManager eventManager);
 
     void setEventProcessor(BoardEventListener matchGameListener);
+
+    void reset();
 }

@@ -30,6 +30,11 @@ public class RandomGemsProvider implements GemsProvider {
         return GemType.getRandom();
     }
 
+    @Override
+    public void reset() {
+        gems = null;
+    }
+
     private Gem createRandomGem(float x, float y) {
         return new GemModel(GemType.getRandom(), x, y);
     }

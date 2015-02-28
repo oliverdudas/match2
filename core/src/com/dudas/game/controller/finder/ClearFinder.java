@@ -51,7 +51,7 @@ public class ClearFinder extends BaseGemFinder {
     }
 
     private Array<Gem> resolveClear(Gem actualGem, float directionX, float directionY) {
-        int actualBoardIndex = actualGem.getIndex();
+        int actualBoardIndex = actualGem.getIndex(helper.getHeight());
         float nextX = actualGem.getX() + directionX;
         float nextY = actualGem.getY() + directionY;
         int nextBoardIndex = helper.createGemBoardIndex(nextX, nextY);

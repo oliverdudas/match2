@@ -3,6 +3,7 @@ package com.dudas.game.controller.finder;
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.controller.helper.BoardHelper;
 import com.dudas.game.model.Gem;
+import com.dudas.game.model.GemType;
 import com.dudas.game.model.provider.GemsProvider;
 
 import java.util.Arrays;
@@ -13,7 +14,7 @@ import java.util.Comparator;
  */
 public class FallFinder extends BaseGemFinder {
 
-    private Array<Gem> resultGems;
+    protected Array<Gem> resultGems;
     private GemsProvider provider;
 
     public FallFinder(Array<Gem> boardGems, BoardHelper helper, GemsProvider provider) {
@@ -24,9 +25,10 @@ public class FallFinder extends BaseGemFinder {
 
     /**
      * Sort gems by X and Y coordinates
+     *
      * @param gems gems to sort
      */
-    private void sortGems(Gem... gems) {
+    protected void sortGems(Gem... gems) {
         Arrays.sort(gems, new Comparator<Gem>() {
             @Override
             public int compare(Gem o1, Gem o2) {
@@ -42,15 +44,39 @@ public class FallFinder extends BaseGemFinder {
 
     @Override
     public Gem[] find(Gem... sourceGems) {
+        resultGems.addAll(sourceGems);
 
         sortGems(sourceGems);
         for (Gem gem : sourceGems) {
-            gem.setNew(true);
-            gem.setType(provider.getRandomGemType());
-            moveGemToTop(gem.getIndex());
+            int originalIndex = gem.getIndex(helper.getHeight());
+            processFall(gem.getIndex(helper.getHeight()), gem, originalIndex);
         }
 
         return resultGems.toArray(Gem.class);
+    }
+
+    private void processFall(int index, Gem gem, int index2) {
+        moveGemToTop(index);
+        toggleGem(gem);
+        searchForBelowEmpty(index2);
+    }
+
+    private void toggleGem(Gem gem) {
+        if (helper.isTopBoardIndex(gem.getIndex(helper.getHeight()))) {
+            gem.setNew(true);
+            gem.setType(provider.getRandomGemType());
+        } else {
+            gem.setType(GemType.EMPTY);
+        }
+    }
+
+    protected void searchForBelowEmpty(int gemIndex) {
+        int belowGemIndex = helper.getBelowNeighborIndex(gemIndex);
+        if (helper.isValidIndex(gemIndex) && helper.isValidIndex(belowGemIndex) && helper.findGem(belowGemIndex, boardGems).getType().equals(GemType.EMPTY)) {
+            processFall(belowGemIndex, helper.findGem(belowGemIndex, boardGems), belowGemIndex);
+        } else if (isPossibleMove(gemIndex, belowGemIndex)) {
+            searchForBelowEmpty(belowGemIndex);
+        }
     }
 
     /**
@@ -61,7 +87,7 @@ public class FallFinder extends BaseGemFinder {
      */
     private void moveGemToTop(int gemIndex) {
         int aboveGemIndex = helper.getAboveNeighborIndex(gemIndex);
-        if (helper.isValidIndex(gemIndex) && helper.isValidIndex(aboveGemIndex)) {
+        if (isPossibleMove(gemIndex, aboveGemIndex)) {
             helper.swapSynchronized(gemIndex, aboveGemIndex, boardGems);
             moveGemToTop(aboveGemIndex);
         }
@@ -70,5 +96,11 @@ public class FallFinder extends BaseGemFinder {
             gem.block();
             resultGems.add(gem);
         }
+    }
+
+    private boolean isPossibleMove(int gemIndex, int nextGemIndex) {
+        return helper.isValidIndex(gemIndex) &&
+                helper.isValidIndex(nextGemIndex) &&
+                (helper.findGem(nextGemIndex, boardGems).isReady() || resultGems.contains(helper.findGem(nextGemIndex, boardGems), false));
     }
 }

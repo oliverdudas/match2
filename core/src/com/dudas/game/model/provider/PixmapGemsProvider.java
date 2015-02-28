@@ -19,20 +19,22 @@ public class PixmapGemsProvider implements GemsProvider {
 
     private Array<Gem> gems;
     private Array<GemType> gemTypeStack;
+    private String fileName;
 
     public PixmapGemsProvider(String fileName) {
         this.gems = new Array<Gem>();
-        init(fileName);
+        this.fileName = fileName;
+        init();
     }
 
-    private void init(String filePath) {
+    private void init() {
         BufferedImage image;
         try {
-            image = ImageIO.read(new File(ClassLoader.getSystemResource("pixmap/" + filePath).toURI()));
+            image = ImageIO.read(new File(ClassLoader.getSystemResource("pixmap/" + fileName).toURI()));
         } catch (IOException e) {
-            throw new RuntimeException("Unable to read ImageIO from file: " + filePath);
+            throw new RuntimeException("Unable to read ImageIO from file: " + fileName);
         } catch (URISyntaxException e) {
-            throw new RuntimeException("Unable to read ImageIO from file: " + filePath);
+            throw new RuntimeException("Unable to read ImageIO from file: " + fileName);
         }
         int width = image.getWidth();
         int height = image.getHeight();
@@ -78,6 +80,11 @@ public class PixmapGemsProvider implements GemsProvider {
             return gemTypeStack.removeIndex(0);
         }
         return GemType.getRandom();
+    }
+
+    @Override
+    public void reset() {
+        init();
     }
 
     public void mockRandomGemTypes(GemType... gemTypes) {

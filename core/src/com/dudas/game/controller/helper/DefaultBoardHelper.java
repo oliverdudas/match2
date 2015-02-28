@@ -29,10 +29,20 @@ public class DefaultBoardHelper implements BoardHelper {
         initTopBorderIndexes();
     }
 
+    @Override
+    public float getWidth() {
+        return width;
+    }
+
+    @Override
+    public float getHeight() {
+        return height;
+    }
+
     private void initTopBorderIndexes() {
-        topBorderIndexes = new IntArray((int) width);
-        for (int i = 1; i <= width; i++) {
-            topBorderIndexes.add((int) width * i - 1);
+        topBorderIndexes = new IntArray((int) getWidth());
+        for (int i = 1; i <= getWidth(); i++) {
+            topBorderIndexes.add((int) getHeight() * i - 1);
         }
     }
 
@@ -62,13 +72,18 @@ public class DefaultBoardHelper implements BoardHelper {
     @Override
     public Gem synchronizeGemPosition(int boardIndex, Array<Gem> boardGems) {
         Gem gem = findGem(boardIndex, boardGems);
-        gem.setIndex(boardIndex);
+        gem.setIndex(boardIndex, (int) getHeight());
         return gem;
     }
 
     @Override
     public boolean isNotTopBoardIndex(int below) {
-        return !topBorderIndexes.contains(below);
+        return !isTopBoardIndex(below);
+    }
+
+    @Override
+    public boolean isTopBoardIndex(int below) {
+        return topBorderIndexes.contains(below);
     }
 
     @Override
@@ -136,6 +151,6 @@ public class DefaultBoardHelper implements BoardHelper {
 
     @Override
     public int createGemBoardIndex(float x, float y) {
-        return (int) (x * width + y);
+        return (int) (x * height + y);
     }
 }
