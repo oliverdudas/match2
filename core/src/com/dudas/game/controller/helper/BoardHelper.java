@@ -43,4 +43,6 @@ public interface BoardHelper {
     boolean areNeighborIndexes(int fromIndex, int toIndex);
 
     int createGemBoardIndex(float x, float y);
+
+    boolean areGemsReady(Gem... gems);
 }

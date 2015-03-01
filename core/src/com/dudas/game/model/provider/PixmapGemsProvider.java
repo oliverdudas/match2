@@ -62,6 +62,10 @@ public class PixmapGemsProvider implements GemsProvider {
                     gems.add(GemFactory.getGem(GemType.PURPLE, x, y));
                 } else if (GEM_COLOR_TYPE.YELLOW.sameColor(R, G, B, A)) {
                     gems.add(GemFactory.getGem(GemType.YELLOW, x, y));
+                } else if (GEM_COLOR_TYPE.EMPTY.sameColor(R, G, B, A)) {
+                    Gem emptyGem = GemFactory.getGem(GemType.EMPTY, x, y);
+                    emptyGem.block();
+                    gems.add(emptyGem);
                 } else {
                     throw new RuntimeException("Unknown pixel RGB.");
                 }
@@ -102,7 +106,8 @@ public class PixmapGemsProvider implements GemsProvider {
         BLUE(74, 210, 242, 255),     //  74, 210, 242, 255
         ORANGE(217, 127, 55, 255),   // 217, 127,  55, 255
         PURPLE(165, 144, 236, 255),  // 165, 144, 236, 255
-        YELLOW(211, 180, 16, 255);   // 211, 180,  16, 255
+        YELLOW(211, 180, 16, 255),   // 211, 180,  16, 255
+        EMPTY(255, 255, 255, 1);     // 255, 255, 255,   1
 
         private int r;
         private int g;

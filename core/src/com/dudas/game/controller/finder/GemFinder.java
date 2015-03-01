@@ -8,4 +8,6 @@ import com.dudas.game.model.Gem;
 public interface GemFinder {
 
     Gem[] find(Gem... gems);
+
+    Gem[] find(Gem[]... gemArrays);
 }

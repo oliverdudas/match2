@@ -153,4 +153,14 @@ public class DefaultBoardHelper implements BoardHelper {
     public int createGemBoardIndex(float x, float y) {
         return (int) (x * height + y);
     }
+
+    @Override
+    public boolean areGemsReady(Gem... gems) {
+        for (Gem gem : gems) {
+            if (!gem.isReady()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

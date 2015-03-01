@@ -12,11 +12,15 @@ public abstract class BaseGemFinder implements GemFinder {
     protected Array<Gem> boardGems;
     protected BoardHelper helper;
 
-    public BaseGemFinder(Array<Gem> boardGems, BoardHelper helper) {
+    protected BaseGemFinder(Array<Gem> boardGems, BoardHelper helper) {
         this.boardGems = boardGems;
         this.helper = helper;
     }
 
     public abstract Gem[] find(Gem... gems);
+
+    public Gem[] find(Gem[]... gemArrays) {
+        throw new UnsupportedOperationException();
+    }
 
 }

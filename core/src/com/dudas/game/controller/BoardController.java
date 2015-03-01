@@ -4,8 +4,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.dudas.game.controller.event.*;
 import com.dudas.game.controller.finder.ClearFinder;
-import com.dudas.game.controller.finder.FallBelowFinder;
+import com.dudas.game.controller.finder.BellowEmptyFinder;
 import com.dudas.game.controller.finder.FallFinder;
+import com.dudas.game.controller.finder.GemFinder;
 import com.dudas.game.controller.helper.BoardHelper;
 import com.dudas.game.controller.helper.DefaultBoardHelper;
 import com.dudas.game.model.Gem;
@@ -212,15 +213,14 @@ public class BoardController implements Board {
 
             @Override
             public void complete() {
-                getFromGem().setReady();
-                getToGem().setReady();
-                fallBelow(getFromGem(), getToGem());
+                setReadyGems(getFromGem(), getToGem());
+                findEmptyBelow(getFromGem(), getToGem());
             }
         });
     }
 
     private void clear(final Gem fromGem, final Gem toGem) {
-        ClearFinder clearFinder = new ClearFinder(getGems(), helper);
+        GemFinder clearFinder = new ClearFinder(getGems(), helper);
         final Gem[] clearGems = clearFinder.find(fromGem, toGem);
 
         if (clearGems.length >= 3) {
@@ -228,7 +228,7 @@ public class BoardController implements Board {
             final Gem unclearedGem = resolveUnclearedGem(fromGem, toGem, clearGems);
             if (unclearedGem != null) {
                 unclearedGem.setReady();
-                fallBelow(unclearedGem);
+                findEmptyBelow(unclearedGem);
             }
             eventManager.fireClearSuccess(new BoardEvent() {
                 @Override
@@ -268,8 +268,12 @@ public class BoardController implements Board {
     }
 
     private void fall(final Gem... clearedGems) {
-        FallFinder fallFinder = new FallFinder(getGems(), helper, gemsProvider);
-        final Gem[] fallGems = fallFinder.find(clearedGems);
+        GemFinder fallFinder = new FallFinder(getGems(), helper, gemsProvider);
+
+        GemFinder bellowEmptyGemFinder = new BellowEmptyFinder(getGems(), helper);
+        Gem[] bellowEmptyGems = bellowEmptyGemFinder.find(clearedGems);
+
+        final Gem[] fallGems = fallFinder.find(clearedGems, bellowEmptyGems);
 
         eventManager.fireFall(new BoardEvent() {
             @Override
@@ -293,7 +297,7 @@ public class BoardController implements Board {
     }
 
     private void clearFallen(Gem... fallGems) {
-        ClearFinder clearFinder = new ClearFinder(getGems(), helper);
+        GemFinder clearFinder = new ClearFinder(getGems(), helper);
         final Gem[] clearGems = clearFinder.find(fallGems);
 
         if (clearGems.length >= 3) {
@@ -311,18 +315,22 @@ public class BoardController implements Board {
             });
             // free celarGems in the pool
         } else {
-            fallBelow(fallGems);
+            findEmptyBelow(fallGems);
 //            gemArrayPool.free(gems); // setting free fallGems from fall(...)
 //            gemArrayPool.free(clearGems);
         }
 
     }
 
-    private void fallBelow(Gem... fallGems) {
-        FallBelowFinder fallBelowFinder = new FallBelowFinder(getGems(), helper, gemsProvider);
-        Gem[] fallBelowGems = fallBelowFinder.find(fallGems);
-        if (fallBelowGems.length > 0) {
-            fall(fallBelowGems);
+    private void findEmptyBelow(Gem... fallGems) {
+        if (!helper.areGemsReady(fallGems)) {
+            throw new RuntimeException("Gems must be ready.");
+        }
+
+        GemFinder fallBelowFinder = new BellowEmptyFinder(getGems(), helper);
+        Gem[] belowEmptyGems = fallBelowFinder.find(fallGems);
+        if (belowEmptyGems.length > 0) {
+            fall(belowEmptyGems);
         } else {
 //            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
         }

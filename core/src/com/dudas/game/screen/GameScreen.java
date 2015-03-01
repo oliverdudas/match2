@@ -57,8 +57,8 @@ public class GameScreen extends AbstractGameScreen {
         BoardController board = new BoardController(
                 Constants.BOARD_WIDTH,
                 Constants.BOARD_HEIGHT,
-                new TestGemsProvider(),
-//                new RandomGemsProvider(),
+//                new TestGemsProvider(),
+                new RandomGemsProvider(),
                 new BoardEventManager(),
                 new DefaultBoardHelper(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT)
         );

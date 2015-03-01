@@ -5,60 +5,53 @@ import com.dudas.game.controller.helper.BoardHelper;
 import com.dudas.game.model.Gem;
 import com.dudas.game.model.GemType;
 import com.dudas.game.model.provider.GemsProvider;
-
-import java.util.Arrays;
-import java.util.Comparator;
+import com.dudas.game.util.GemsSorter;
 
 /**
  * Created by OLO on 22. 2. 2015
  */
 public class FallFinder extends BaseGemFinder {
 
-    protected Array<Gem> resultGems;
+    protected Array<Gem> fallGems;
     private GemsProvider provider;
 
     public FallFinder(Array<Gem> boardGems, BoardHelper helper, GemsProvider provider) {
         super(boardGems, helper);
-        resultGems = new Array<Gem>();
+        fallGems = new Array<Gem>();
         this.provider = provider;
-    }
-
-    /**
-     * Sort gems by X and Y coordinates
-     *
-     * @param gems gems to sort
-     */
-    protected void sortGems(Gem... gems) {
-        Arrays.sort(gems, new Comparator<Gem>() {
-            @Override
-            public int compare(Gem o1, Gem o2) {
-                int byX = (int) o1.getX() - (int) o2.getX();
-                if (byX != 0) {
-                    return byX;
-                } else {
-                    return (int) o1.getY() - (int) o2.getY();
-                }
-            }
-        });
     }
 
     @Override
     public Gem[] find(Gem... sourceGems) {
-        resultGems.addAll(sourceGems);
+        addAll(sourceGems);
 
-        sortGems(sourceGems);
+        GemsSorter.sortGems(sourceGems);
         for (Gem gem : sourceGems) {
-            int originalIndex = gem.getIndex(helper.getHeight());
-            processFall(gem.getIndex(helper.getHeight()), gem, originalIndex);
+            processFall(gem.getIndex(helper.getHeight()), gem);
         }
 
-        return resultGems.toArray(Gem.class);
+        return fallGems.toArray(Gem.class);
     }
 
-    private void processFall(int index, Gem gem, int index2) {
+    private void addAll(Gem[] sourceGems) {
+        for (Gem gem : sourceGems) {
+            if (!containsGem(gem)) {
+                fallGems.add(gem);
+            }
+        }
+    }
+
+    @Override
+    public Gem[] find(Gem[]... gemArrays) {
+        for (Gem[] gemArray : gemArrays) {
+            find(gemArray);
+        }
+        return fallGems.toArray(Gem.class);
+    }
+
+    private void processFall(int index, Gem gem) {
         moveGemToTop(index);
         toggleGem(gem);
-        searchForBelowEmpty(index2);
     }
 
     private void toggleGem(Gem gem) {
@@ -67,15 +60,6 @@ public class FallFinder extends BaseGemFinder {
             gem.setType(provider.getRandomGemType());
         } else {
             gem.setType(GemType.EMPTY);
-        }
-    }
-
-    protected void searchForBelowEmpty(int gemIndex) {
-        int belowGemIndex = helper.getBelowNeighborIndex(gemIndex);
-        if (helper.isValidIndex(gemIndex) && helper.isValidIndex(belowGemIndex) && helper.findGem(belowGemIndex, boardGems).getType().equals(GemType.EMPTY)) {
-            processFall(belowGemIndex, helper.findGem(belowGemIndex, boardGems), belowGemIndex);
-        } else if (isPossibleMove(gemIndex, belowGemIndex)) {
-            searchForBelowEmpty(belowGemIndex);
         }
     }
 
@@ -92,15 +76,19 @@ public class FallFinder extends BaseGemFinder {
             moveGemToTop(aboveGemIndex);
         }
         Gem gem = helper.findGem(gemIndex, boardGems); // TODO: refactor
-        if (!resultGems.contains(gem, false)) { // maybe a Set would be better, to prevent duplicate items
+        if (!containsGem(gem)) { // maybe a Set would be better, to prevent duplicate items
             gem.block();
-            resultGems.add(gem);
+            fallGems.add(gem);
         }
+    }
+
+    private boolean containsGem(Gem gem) {
+        return fallGems.contains(gem, false);
     }
 
     private boolean isPossibleMove(int gemIndex, int nextGemIndex) {
         return helper.isValidIndex(gemIndex) &&
                 helper.isValidIndex(nextGemIndex) &&
-                (helper.findGem(nextGemIndex, boardGems).isReady() || resultGems.contains(helper.findGem(nextGemIndex, boardGems), false));
+                (helper.findGem(nextGemIndex, boardGems).isReady() || containsGem(helper.findGem(nextGemIndex, boardGems)));
     }
 }

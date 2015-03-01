@@ -14,4 +14,6 @@ public interface GemsProvider {
     GemType getRandomGemType();
 
     void reset();
+
+
 }
