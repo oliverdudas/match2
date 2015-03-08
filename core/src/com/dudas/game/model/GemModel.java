@@ -11,6 +11,12 @@ public class GemModel implements Gem {
     private GemState state;
     private boolean newGem;
 
+    private int id;
+
+    public GemModel(GemType type, float x, float y, int id) {
+        this(type, x, y);
+        this.id = id;
+    }
 
     public GemModel(GemType type, float x, float y) {
         this.x = x;
@@ -18,11 +24,6 @@ public class GemModel implements Gem {
         this.type = type;
         this.state = GemState.READY;
         this.newGem = false;
-    }
-
-    public enum GemState {
-        READY,
-        BLOCKED
     }
 
     public int getIndex(float height) {
@@ -80,6 +81,14 @@ public class GemModel implements Gem {
 
     public boolean isBlocked() {
         return GemState.BLOCKED.equals(state);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override

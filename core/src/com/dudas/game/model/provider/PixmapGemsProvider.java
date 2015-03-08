@@ -51,19 +51,19 @@ public class PixmapGemsProvider implements GemsProvider {
                 int A = (int) (color.a * 255f);
 
                 if (GEM_COLOR_TYPE.RED.sameColor(R, G, B, A)) {
-                    gems.add(GemFactory.getGem(GemType.RED, x, y));
+                    gems.add(GemFactory.getGem(GemType.RED, x, y, createId(height, x, y)));
                 } else if (GEM_COLOR_TYPE.GREEN.sameColor(R, G, B, A)) {
-                    gems.add(GemFactory.getGem(GemType.GREEN, x, y));
+                    gems.add(GemFactory.getGem(GemType.GREEN, x, y, createId(height, x, y)));
                 } else if (GEM_COLOR_TYPE.BLUE.sameColor(R, G, B, A)) {
-                    gems.add(GemFactory.getGem(GemType.BLUE, x, y));
+                    gems.add(GemFactory.getGem(GemType.BLUE, x, y, createId(height, x, y)));
                 } else if (GEM_COLOR_TYPE.ORANGE.sameColor(R, G, B, A)) {
-                    gems.add(GemFactory.getGem(GemType.ORANGE, x, y));
+                    gems.add(GemFactory.getGem(GemType.ORANGE, x, y, createId(height, x, y)));
                 } else if (GEM_COLOR_TYPE.PURPLE.sameColor(R, G, B, A)) {
-                    gems.add(GemFactory.getGem(GemType.PURPLE, x, y));
+                    gems.add(GemFactory.getGem(GemType.PURPLE, x, y, createId(height, x, y)));
                 } else if (GEM_COLOR_TYPE.YELLOW.sameColor(R, G, B, A)) {
-                    gems.add(GemFactory.getGem(GemType.YELLOW, x, y));
+                    gems.add(GemFactory.getGem(GemType.YELLOW, x, y, createId(height, x, y)));
                 } else if (GEM_COLOR_TYPE.EMPTY.sameColor(R, G, B, A)) {
-                    Gem emptyGem = GemFactory.getGem(GemType.EMPTY, x, y);
+                    Gem emptyGem = GemFactory.getGem(GemType.EMPTY, x, y, createId(height, x, y));
                     emptyGem.block();
                     gems.add(emptyGem);
                 } else {
@@ -91,6 +91,11 @@ public class PixmapGemsProvider implements GemsProvider {
         init();
     }
 
+    @Override
+    public Gem createGem(GemType gemType, float x, float y, int id) {
+        return null;
+    }
+
     public void mockRandomGemTypes(GemType... gemTypes) {
         if (gemTypeStack == null) {
             gemTypeStack = new Array<GemType>();
@@ -98,6 +103,10 @@ public class PixmapGemsProvider implements GemsProvider {
         }
 
         gemTypeStack.addAll(gemTypes);
+    }
+
+    private int createId(int height, int x, int y) {
+        return x * height + y + 1;
     }
 
     public enum GEM_COLOR_TYPE {

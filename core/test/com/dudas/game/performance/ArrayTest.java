@@ -2,10 +2,11 @@ package com.dudas.game.performance;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.model.Gem;
-import com.dudas.game.model.GemModel;
+import com.dudas.game.model.GemFactory;
 import com.dudas.game.model.GemType;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by OLO on 1. 2. 2015
@@ -41,7 +42,7 @@ public class ArrayTest {
     }
 
     private Gem createGem() {
-        return new GemModel(GemType.BLUE, 0, 0);
+        return GemFactory.getGem(GemType.BLUE, 0, 0, 0);
     }
 
 }

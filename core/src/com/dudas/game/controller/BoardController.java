@@ -1,7 +1,9 @@
 package com.dudas.game.controller;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.dudas.game.controller.event.*;
 import com.dudas.game.controller.finder.ClearFinder;
 import com.dudas.game.controller.finder.BellowEmptyFinder;
@@ -13,12 +15,15 @@ import com.dudas.game.model.Gem;
 import com.dudas.game.model.provider.GemsProvider;
 import com.dudas.game.model.provider.TestGemsProvider;
 
+import java.util.Arrays;
+
 /**
  * Created by foxy on 04/02/2015.
  */
 public class BoardController implements Board {
 
     private static final String TAG = BoardController.class.getName();
+    public static final String BOARD_TAG = "BOARD   ";
 
     private final float width;
     private final float height;
@@ -143,6 +148,19 @@ public class BoardController implements Board {
      *  Flow methods
      */
 
+    private String getTag() {
+        return BOARD_TAG + " DELTA: " + Gdx.graphics.getDeltaTime() + " TIME: " + TimeUtils.millis();
+    }
+
+    private String gemsToString(Gem... gems) {
+        StringBuilder builder = new StringBuilder(" - [");
+        for (Gem gem : gems) {
+            builder.append(gem.getId() + ",");
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
     /**
      * Swaps two gems.
      * This is the entry point for game.
@@ -162,6 +180,8 @@ public class BoardController implements Board {
 
         final Gem toGem = helper.findGem(toIndex, getGems());
         final Gem fromGem = helper.findGem(fromIndex, getGems());
+
+        Gdx.app.debug(getTag(), "SWAP" + gemsToString(fromGem, toGem));
 
         blockGems(fromGem, toGem);
 
@@ -191,6 +211,7 @@ public class BoardController implements Board {
     }
 
     private void backSwap(final Gem fromGem, final Gem toGem) {
+        Gdx.app.debug(getTag(), "BACK SWAP" + gemsToString(fromGem, toGem));
         int fromIndex = fromGem.getIndex(getHeight());
         int toIndex = toGem.getIndex(getHeight());
         helper.swapSynchronized(fromIndex, toIndex, getGems());
@@ -220,6 +241,7 @@ public class BoardController implements Board {
     }
 
     private void clear(final Gem fromGem, final Gem toGem) {
+        Gdx.app.debug(getTag(), "CLEAR" + gemsToString(fromGem, toGem));
         GemFinder clearFinder = new ClearFinder(getGems(), helper);
         final Gem[] clearGems = clearFinder.find(fromGem, toGem);
 
@@ -268,6 +290,7 @@ public class BoardController implements Board {
     }
 
     private void fall(final Gem... clearedGems) {
+        Gdx.app.debug(getTag(), "FALL" + gemsToString(clearedGems));
         GemFinder fallFinder = new FallFinder(getGems(), helper, gemsProvider);
 
         GemFinder bellowEmptyGemFinder = new BellowEmptyFinder(getGems(), helper);
@@ -297,6 +320,7 @@ public class BoardController implements Board {
     }
 
     private void clearFallen(Gem... fallGems) {
+        Gdx.app.debug(getTag(), "CLEAR FALLEN" + gemsToString(fallGems));
         GemFinder clearFinder = new ClearFinder(getGems(), helper);
         final Gem[] clearGems = clearFinder.find(fallGems);
 
@@ -323,6 +347,7 @@ public class BoardController implements Board {
     }
 
     private void findEmptyBelow(Gem... fallGems) {
+        Gdx.app.debug(getTag(), "FIND EMPTY BELLOW" + gemsToString(fallGems));
         if (!helper.areGemsReady(fallGems)) {
             throw new RuntimeException("Gems must be ready.");
         }
@@ -332,6 +357,7 @@ public class BoardController implements Board {
         if (belowEmptyGems.length > 0) {
             fall(belowEmptyGems);
         } else {
+            Gdx.app.debug(getTag(), "CYCLE END");
 //            END OF THE WHOLE SWAP, CLEAR, FALL CYCLE
         }
     }

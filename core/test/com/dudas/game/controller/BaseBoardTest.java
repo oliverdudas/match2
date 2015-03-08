@@ -2,8 +2,8 @@ package com.dudas.game.controller;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.controller.event.EventManager;
-import com.dudas.game.model.Gem;
 import com.dudas.game.controller.event.TwoGemsBoardEvent;
+import com.dudas.game.model.Gem;
 import com.dudas.game.model.GemType;
 import com.dudas.game.model.provider.PixmapGemsProvider;
 import org.junit.Before;

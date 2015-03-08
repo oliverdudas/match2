@@ -2,7 +2,7 @@ package com.dudas.game.model.provider;
 
 import com.badlogic.gdx.utils.Array;
 import com.dudas.game.model.Gem;
-import com.dudas.game.model.GemModel;
+import com.dudas.game.model.GemFactory;
 import com.dudas.game.model.GemType;
 
 /**
@@ -18,11 +18,15 @@ public class RandomGemsProvider implements GemsProvider {
             gems = new Array<Gem>();
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    gems.add(createRandomGem(x, y));
+                    gems.add(createRandomGem(x, y, createId((int) height, x, y)));
                 }
             }
         }
         return gems;
+    }
+
+    private int createId(int height, int x, int y) {
+        return x * height + y + 1;
     }
 
     @Override
@@ -35,7 +39,12 @@ public class RandomGemsProvider implements GemsProvider {
         gems = null;
     }
 
-    private Gem createRandomGem(float x, float y) {
-        return new GemModel(GemType.getRandom(), x, y);
+    @Override
+    public Gem createGem(GemType gemType, float x, float y, int id) {
+        return null;
+    }
+
+    private Gem createRandomGem(float x, float y, int id) {
+        return GemFactory.getGem(GemType.getRandom(), x, y, id);
     }
 }

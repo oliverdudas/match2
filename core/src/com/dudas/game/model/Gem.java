@@ -1,12 +1,13 @@
 package com.dudas.game.model;
 
-import com.dudas.game.model.GemModel;
-import com.dudas.game.model.GemType;
-
 /**
  * Created by foxy on 04/02/2015.
  */
 public interface Gem {
+
+    int getId();
+
+    void setId(int id);
 
     float getX();
 
@@ -24,7 +25,7 @@ public interface Gem {
 
     void setType(GemType type);
 
-    GemModel.GemState getState();
+    GemState getState();
 
     void block();
 

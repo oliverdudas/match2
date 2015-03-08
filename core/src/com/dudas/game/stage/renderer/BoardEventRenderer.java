@@ -1,14 +1,12 @@
 package com.dudas.game.stage.renderer;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.Action;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.DelayAction;
-import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
-import com.badlogic.gdx.scenes.scene2d.actions.ScaleToAction;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.ArrayMap;
-import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.scenes.scene2d.actions.*;
+import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.utils.StringBuilder;
 import com.dudas.game.controller.Board;
 import com.dudas.game.Constants;
 import com.dudas.game.model.Gem;
@@ -36,6 +34,7 @@ public class BoardEventRenderer implements BoardEventListener {
 
     private static final String TAG = GameStage.class.getName();
     public static final float ACTION_DURATION = 0.1f;
+    public static final String RENDERER_TAG = "RENDERER";
 
     private Board board;
     private Group boardGroup;
@@ -186,8 +185,13 @@ public class BoardEventRenderer implements BoardEventListener {
         initGemActors();
     }
 
+    private String getTag() {
+        return RENDERER_TAG + " DELTA: " + Gdx.graphics.getDeltaTime() + " TIME: " + TimeUtils.millis();
+    }
+
     @Override
     public void onSwap(TwoGemsBoardEvent event) {
+        Gdx.app.debug(getTag(), "onSwap");
         Gem fromGem = event.getFromGem();
         GemActor fromActor = gemActors.get(fromGem);
         Gem toGem = event.getToGem();
@@ -219,6 +223,7 @@ public class BoardEventRenderer implements BoardEventListener {
 
     @Override
     public void onBackSwap(TwoGemsBoardEvent event) {
+        Gdx.app.debug(getTag(), "onBackSwap");
         Gem fromGem = event.getFromGem();
         GemActor fromActor = gemActors.get(fromGem);
         Gem toGem = event.getToGem();
@@ -231,6 +236,7 @@ public class BoardEventRenderer implements BoardEventListener {
 
     @Override
     public void onClearSuccess(final BoardEvent event) {
+        Gdx.app.debug(getTag(), "onClearSuccess");
         final Gem[] gems = event.getGems();
         final BoardCountDownEventAction<ClearDoneEvent> clearDoneEventAction = clearDoneCountdownEventActionPool.obtain();
         clearDoneEventAction.setCount(gems.length);
@@ -240,6 +246,10 @@ public class BoardEventRenderer implements BoardEventListener {
                     public void run() {
                         for (Gem gem : gems) {
                             final GemActor gemActor = gemActors.get(gem);
+
+                            if (gemActor.getActions() != null && gemActor.getActions().size > 0) {
+                                throw new RuntimeException("CLEAR CAN'T OVERLAP EXISTING ACTIONS");
+                            }
 
                             ScaleToAction scaleToAction1 = scaleToActionPool.obtain();
                             scaleToAction1.setScale(1.2f);
@@ -282,6 +292,7 @@ public class BoardEventRenderer implements BoardEventListener {
 
     @Override
     public void onFall(final BoardEvent event) {
+        Gdx.app.debug(getTag(), "onFall");
         final Array<Gem> gems = new Array<Gem>(event.getGems());
         gems.sort(new Comparator<Gem>() {
             @Override
@@ -300,6 +311,17 @@ public class BoardEventRenderer implements BoardEventListener {
                     public void run() {
                         for (Gem gem : gems) {
                             GemActor gemActor = gemActors.get(gem);
+
+                            Array<Action> gemActorActions = gemActor.getActions();
+                            if (gemActorActions != null && gemActorActions.size > 0) {
+                                Gdx.app.debug("TOO MANY ACTIONS", "Actions size: " + gemActorActions.size + "\n" +
+                                        "Gems size: " + gems.size + "\n" +
+                                        "Actions: " + gemActorActions.toString(" --- "));
+
+                                debugFallSequence((SequenceAction) gemActorActions.get(0));
+
+                                gemActor.clearActions();
+                            }
 
                             if (gem.isNew()) {
                                 float yposAddition = gem.getY() + fallDistances.get((int) gemActor.getX());
@@ -352,6 +374,27 @@ public class BoardEventRenderer implements BoardEventListener {
 
         fallDistancesPool.free(fallDistances); // release fallDistances back to pool. This isn't necessery to be poolable, because every frame is used only once, but I prefer this solution.
         fallDistancesPool.free(fallDelay);
+    }
+
+    private void debugFallSequence(SequenceAction sequenceAction) {
+        GemActor actor = (GemActor) sequenceAction.getTarget();
+        Gem gem = (Gem) actor.getUserObject();
+
+        com.badlogic.gdx.utils.StringBuilder builder = new StringBuilder("");
+
+        builder.append("\n\nGemActor(" + actor.getX() + ", " + actor.getY() + ") --- Gem(" + gem.getX() + ", " + gem.getY() + ", " + gem.getType().name() + ")");
+
+        Array<Action> actions = sequenceAction.getActions();
+        for (Action action : actions) {
+            if (action instanceof MoveToAction) {
+                MoveToAction moveToAction = (MoveToAction) action;
+                builder.append("" +
+                        "\n\n" +
+                        "Action name: " + moveToAction.toString() + "(" + moveToAction.getX() + ", " + moveToAction.getY() + ")");
+            }
+        }
+
+        Gdx.app.debug("SEQUENCE DEBUG", builder.toString());
     }
 
     private IntArray createFallDistanceOfNewGems(Array<Gem> gems) {

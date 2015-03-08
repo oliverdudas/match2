@@ -55,7 +55,7 @@ public class ClearFinder extends BaseGemFinder {
         float nextX = actualGem.getX() + directionX;
         float nextY = actualGem.getY() + directionY;
         int nextBoardIndex = helper.createGemBoardIndex(nextX, nextY);
-        if (helper.areNeighborIndexes(actualBoardIndex, nextBoardIndex) && helper.areSameType(actualGem, helper.findGem(nextBoardIndex, boardGems))) {
+        if (helper.areNeighborIndexes(actualBoardIndex, nextBoardIndex) && helper.areSameType(actualGem, helper.findGem(nextBoardIndex, boardGems)) && helper.findGem(nextBoardIndex, boardGems).isReady()) {
             Array<Gem> gemArray = resolveClear(helper.findGem(nextBoardIndex, boardGems), directionX, directionY);
             gemArray.add(helper.findGem(nextBoardIndex, boardGems));
             return gemArray;
