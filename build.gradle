@@ -61,7 +61,10 @@ project(":core") {
     sourceSets.test.resources.srcDirs = ["test/resources/"]
 
     dependencies {
-        compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile "com.badlogicgames.gdx:gdx:$gdxVersion",
+                "com.google.inject:guice:+"
+
+//        compile group: "com.google.code.guice", name: "guice", version: '3.0'
 
         testCompile "junit:junit:+",
                     "org.powermock:powermock-core:+",

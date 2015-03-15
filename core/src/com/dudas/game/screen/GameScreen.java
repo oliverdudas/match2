@@ -4,14 +4,11 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.dudas.game.Constants;
-import com.dudas.game.controller.BoardController;
-import com.dudas.game.controller.event.BoardEventManager;
-import com.dudas.game.controller.helper.DefaultBoardHelper;
-import com.dudas.game.model.provider.RandomGemsProvider;
-import com.dudas.game.model.provider.TestGemsProvider;
+import com.dudas.game.controller.Board;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.MainStage;
+import com.dudas.game.util.inject.AppInjector;
+import com.google.inject.Inject;
 
 /**
  * Created by OLO on 31. 1. 2015
@@ -24,6 +21,7 @@ public class GameScreen extends AbstractGameScreen {
     private GameStage gameStage;
     private boolean paused;
 
+    @Inject
     public GameScreen(Game game) {
         super(game);
     }
@@ -54,15 +52,8 @@ public class GameScreen extends AbstractGameScreen {
     public void show() {
         SpriteBatch batch = new SpriteBatch();
         mainStage = new MainStage(batch);
-        BoardController board = new BoardController(
-                Constants.BOARD_WIDTH,
-                Constants.BOARD_HEIGHT,
-//                new TestGemsProvider(),
-                new RandomGemsProvider(),
-                new BoardEventManager(),
-                new DefaultBoardHelper(Constants.BOARD_WIDTH, Constants.BOARD_HEIGHT)
-        );
-        gameStage = new GameStage(batch, board);
+        Board board = AppInjector.createBoard();
+        gameStage = new GameStage(mainStage.getBatch(), board);
 //        Gdx.input.setCatchBackKey(true);
     }
 

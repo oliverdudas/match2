@@ -5,6 +5,9 @@ package com.dudas.game;
  */
 public class Constants {
 
+    public static final String WIDTH = "width";
+    public static final String HEIGHT = "height";
+
     public static final float BOARD_WIDTH = 9;
     public static final float BOARD_HEIGHT = 9;
 

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.dudas.game.Constants;
 import com.dudas.game.controller.event.*;
 import com.dudas.game.controller.finder.ClearFinder;
 import com.dudas.game.controller.finder.BellowEmptyFinder;
@@ -14,6 +15,8 @@ import com.dudas.game.controller.helper.DefaultBoardHelper;
 import com.dudas.game.model.Gem;
 import com.dudas.game.model.provider.GemsProvider;
 import com.dudas.game.model.provider.TestGemsProvider;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import java.util.Arrays;
 
@@ -46,7 +49,12 @@ public class BoardController implements Board {
         this(width, height, gemsProvider, eventManager, new DefaultBoardHelper(width, height));
     }
 
-    public BoardController(float width, float height, GemsProvider provider, EventManager eventManager, BoardHelper helper) {
+    @Inject
+    public BoardController(@Named(Constants.WIDTH) float width,
+                           @Named(Constants.HEIGHT) float height,
+                           GemsProvider provider,
+                           EventManager eventManager,
+                           BoardHelper helper) {
         this.width = width;
         this.height = height;
         this.gemsProvider = provider;

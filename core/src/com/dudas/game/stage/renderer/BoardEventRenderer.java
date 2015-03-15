@@ -2,23 +2,22 @@ package com.dudas.game.stage.renderer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Action;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.actions.*;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.utils.StringBuilder;
-import com.dudas.game.controller.Board;
 import com.dudas.game.Constants;
-import com.dudas.game.model.Gem;
+import com.dudas.game.controller.Board;
 import com.dudas.game.controller.event.BoardEvent;
 import com.dudas.game.controller.event.BoardEventListener;
 import com.dudas.game.controller.event.TwoGemsBoardEvent;
-import com.dudas.game.stage.renderer.event.ClearDoneEvent;
-import com.dudas.game.stage.renderer.event.FallDoneEvent;
-import com.dudas.game.stage.renderer.action.FireEventAction;
+import com.dudas.game.model.Gem;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.actor.GemActor;
 import com.dudas.game.stage.renderer.action.BoardCountDownEventAction;
+import com.dudas.game.stage.renderer.action.FireEventAction;
+import com.dudas.game.stage.renderer.event.ClearDoneEvent;
+import com.dudas.game.stage.renderer.event.FallDoneEvent;
 import com.dudas.game.stage.renderer.poolable.ClearCompleteCallback;
 import com.dudas.game.stage.renderer.poolable.FallCompleteCallback;
 
