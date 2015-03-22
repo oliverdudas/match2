@@ -12,6 +12,8 @@ public class DesktopLauncher {
 
 	public static void main (String[] arg) {
 
+		System.setProperty("logback.configurationFile", "E:\\ligdxspace\\match2\\desktop\\src\\com\\dudas\\game\\desktop\\logback.xml");
+
 		if (rebuildAtlas) {
 			TexturePacker.Settings settings = new TexturePacker.Settings();
 			settings.maxWidth = 2048;
@@ -23,9 +25,9 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.title = "MultipleStages";
 //		config.width = 1280;
-		config.width = 800;
+		config.width = 360;
 //		config.height = 720;
-		config.height = 600;
+		config.height = 360;
 		new LwjglApplication(new Match2(), config);
 	}
 }

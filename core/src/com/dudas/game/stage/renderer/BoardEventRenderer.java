@@ -20,6 +20,8 @@ import com.dudas.game.stage.renderer.event.ClearDoneEvent;
 import com.dudas.game.stage.renderer.event.FallDoneEvent;
 import com.dudas.game.stage.renderer.poolable.ClearCompleteCallback;
 import com.dudas.game.stage.renderer.poolable.FallCompleteCallback;
+import org.slf4j.*;
+import org.slf4j.Logger;
 
 import java.util.Comparator;
 
@@ -31,9 +33,8 @@ import static com.badlogic.gdx.scenes.scene2d.actions.Actions.sequence;
  */
 public class BoardEventRenderer implements BoardEventListener {
 
-    private static final String TAG = GameStage.class.getName();
+    Logger logger = LoggerFactory.getLogger(BoardEventRenderer.class);
     public static final float ACTION_DURATION = 0.1f;
-    public static final String RENDERER_TAG = "RENDERER";
 
     private Board board;
     private Group boardGroup;
@@ -184,13 +185,13 @@ public class BoardEventRenderer implements BoardEventListener {
         initGemActors();
     }
 
-    private String getTag() {
-        return RENDERER_TAG + " DELTA: " + Gdx.graphics.getDeltaTime() + " TIME: " + TimeUtils.millis();
+    private String getTag(String methodName) {
+        return methodName + ": " + " DELTA: " + Gdx.graphics.getDeltaTime() + " TIME: " + TimeUtils.millis();
     }
 
     @Override
     public void onSwap(TwoGemsBoardEvent event) {
-        Gdx.app.debug(getTag(), "onSwap");
+        logger.debug(getTag("onSwap"));
         Gem fromGem = event.getFromGem();
         GemActor fromActor = gemActors.get(fromGem);
         Gem toGem = event.getToGem();
@@ -222,7 +223,7 @@ public class BoardEventRenderer implements BoardEventListener {
 
     @Override
     public void onBackSwap(TwoGemsBoardEvent event) {
-        Gdx.app.debug(getTag(), "onBackSwap");
+        logger.debug(getTag("onBackSwap"));
         Gem fromGem = event.getFromGem();
         GemActor fromActor = gemActors.get(fromGem);
         Gem toGem = event.getToGem();
@@ -235,7 +236,7 @@ public class BoardEventRenderer implements BoardEventListener {
 
     @Override
     public void onClearSuccess(final BoardEvent event) {
-        Gdx.app.debug(getTag(), "onClearSuccess");
+        logger.debug(getTag("onClearSuccess"));
         final Gem[] gems = event.getGems();
         final BoardCountDownEventAction<ClearDoneEvent> clearDoneEventAction = clearDoneCountdownEventActionPool.obtain();
         clearDoneEventAction.setCount(gems.length);
@@ -245,6 +246,8 @@ public class BoardEventRenderer implements BoardEventListener {
                     public void run() {
                         for (Gem gem : gems) {
                             final GemActor gemActor = gemActors.get(gem);
+
+                            logger.debug("onClear iterated gem: " + gemsToString(gem));
 
                             if (gemActor.getActions() != null && gemActor.getActions().size > 0) {
                                 throw new RuntimeException("CLEAR CAN'T OVERLAP EXISTING ACTIONS");
@@ -291,7 +294,7 @@ public class BoardEventRenderer implements BoardEventListener {
 
     @Override
     public void onFall(final BoardEvent event) {
-        Gdx.app.debug(getTag(), "onFall");
+        logger.debug(getTag("onFall"));
         final Array<Gem> gems = new Array<Gem>(event.getGems());
         gems.sort(new Comparator<Gem>() {
             @Override
@@ -311,9 +314,11 @@ public class BoardEventRenderer implements BoardEventListener {
                         for (Gem gem : gems) {
                             GemActor gemActor = gemActors.get(gem);
 
+                            logger.debug("onFall iterated gem: " + gemsToString(gem));
+
                             Array<Action> gemActorActions = gemActor.getActions();
                             if (gemActorActions != null && gemActorActions.size > 0) {
-                                Gdx.app.debug("TOO MANY ACTIONS", "Actions size: " + gemActorActions.size + "\n" +
+                                logger.debug("TOO MANY ACTIONS: Actions size: " + gemActorActions.size + "\n" +
                                         "Gems size: " + gems.size + "\n" +
                                         "Actions: " + gemActorActions.toString(" --- "));
 
@@ -393,7 +398,7 @@ public class BoardEventRenderer implements BoardEventListener {
             }
         }
 
-        Gdx.app.debug("SEQUENCE DEBUG", builder.toString());
+        logger.debug("SEQUENCE DEBUG: " + builder.toString());
     }
 
     private IntArray createFallDistanceOfNewGems(Array<Gem> gems) {
@@ -421,4 +426,12 @@ public class BoardEventRenderer implements BoardEventListener {
         return new GemActor(x, y, Constants.GEM_WIDTH, Constants.GEM_HEIGHT);
     }
 
+    private String gemsToString(Gem... gems) {
+        java.lang.StringBuilder builder = new java.lang.StringBuilder(" - [");
+        for (Gem gem : gems) {
+            builder.append(gem.getId()).append(",");
+        }
+        builder.append("]");
+        return builder.toString();
+    }
 }

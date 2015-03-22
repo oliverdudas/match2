@@ -62,7 +62,13 @@ project(":core") {
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion",
-                "com.google.inject:guice:+"
+                "com.google.inject:guice:+",
+                "org.slf4j:slf4j-api:1.7.2", // Using sfl4j allows us to replace different loggers later, if desired
+                "ch.qos.logback:logback-classic:1.0.9", // sfl4j is just a facade for loggers. To actually get logging to work, you need to
+                "ch.qos.logback:logback-core:1.0.9" // tie it in with some actual implementation, e.g., logback
+//        ,
+//                "org.apache.logging.log4j:log4j-api:2.2",
+//                "org.apache.logging.log4j:log4j-core:2.2"
 
 //        compile group: "com.google.code.guice", name: "guice", version: '3.0'
 
