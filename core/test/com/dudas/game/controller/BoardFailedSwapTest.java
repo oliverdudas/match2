@@ -4,7 +4,7 @@ import com.dudas.game.Constants;
 import com.dudas.game.model.Gem;
 import com.dudas.game.exception.NeighborException;
 import com.dudas.game.model.GemType;
-import com.dudas.game.model.provider.PixmapGemsProvider;
+import com.dudas.game.model.provider.DesktopPixmapGemsProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class BoardFailedSwapTest extends BaseSwapBoardTest {
         board = new BoardController(
                 Constants.BOARD_WIDTH,
                 Constants.BOARD_HEIGHT,
-                new PixmapGemsProvider(TESTBOARD_PNG),
+                new DesktopPixmapGemsProvider(TESTBOARD_PNG),
                 eventManager
         );
     }

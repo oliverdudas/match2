@@ -6,45 +6,40 @@ import com.dudas.game.model.Gem;
 import com.dudas.game.model.GemFactory;
 import com.dudas.game.model.GemType;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 /**
  * Created by foxy on 07/02/2015.
  */
-public class PixmapGemsProvider implements GemsProvider {
+public abstract class AbstractPixmapGemsProvider implements GemsProvider {
 
-    private Array<Gem> gems;
+    protected Array<Gem> gems;
     private Array<GemType> gemTypeStack;
-    private String fileName;
+    protected String fileName;
 
-    public PixmapGemsProvider(String fileName) {
-        this.gems = new Array<Gem>();
+    public AbstractPixmapGemsProvider(String fileName) {
         this.fileName = fileName;
+        this.gems = new Array<Gem>();
         init();
     }
 
-    private void init() {
-        BufferedImage image;
-        try {
-            image = ImageIO.read(new File(ClassLoader.getSystemResource("pixmap/" + fileName).toURI()));
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to read ImageIO from file: " + fileName);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Unable to read ImageIO from file: " + fileName);
-        }
-        int width = image.getWidth();
-        int height = image.getHeight();
+    protected abstract void createImage();
+
+    protected abstract int getImageWith();
+
+    protected abstract int getImageHeight();
+
+    protected abstract void setColor(Color color, int x, int y);
+
+    private void readPixmapFile() {
+        createImage();
+        int width = getImageWith();
+        int height = getImageHeight();
 
         Color color = new Color();
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int invertedY = height - 1 - y;
-                Color.argb8888ToColor(color, image.getRGB(x, invertedY));
+                setColor(color, x, invertedY);
                 int R = (int) (color.r * 255f);
                 int G = (int) (color.g * 255f);
                 int B = (int) (color.b * 255f);
@@ -71,6 +66,10 @@ public class PixmapGemsProvider implements GemsProvider {
                 }
             }
         }
+    }
+
+    private void init() {
+        readPixmapFile();
     }
 
     @Override
@@ -105,7 +104,7 @@ public class PixmapGemsProvider implements GemsProvider {
         gemTypeStack.addAll(gemTypes);
     }
 
-    private int createId(int height, int x, int y) {
+    protected int createId(int height, int x, int y) {
         return x * height + y + 1;
     }
 

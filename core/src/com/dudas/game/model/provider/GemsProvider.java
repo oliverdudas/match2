@@ -16,4 +16,5 @@ public interface GemsProvider {
     void reset();
 
     Gem createGem(GemType gemType, float x, float y, int id);
+
 }

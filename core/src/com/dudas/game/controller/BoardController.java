@@ -159,15 +159,22 @@ public class BoardController implements Board {
      */
 
     private String getTag(String methodName) {
-        return methodName + ": " + " DELTA: " + Gdx.graphics.getDeltaTime() + " TIME: " + TimeUtils.millis();
+        return methodName + ": " + " DELTA: " + Gdx.graphics.getDeltaTime();
     }
 
     private String gemsToString(Gem... gems) {
         StringBuilder builder = new StringBuilder(" - [");
         for (Gem gem : gems) {
-            builder.append(gem.getId()).append(",");
+            builder
+                    .append("\n")
+                    .append(gem.getId())
+                    .append("|")
+                    .append(gem.getState().name())
+                    .append("|")
+                    .append(gem.getType().name())
+                    .append(",");
         }
-        builder.append("]");
+        builder.append("\n]");
         return builder.toString();
     }
 

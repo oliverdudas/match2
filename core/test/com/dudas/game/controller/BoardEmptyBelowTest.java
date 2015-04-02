@@ -1,7 +1,7 @@
 package com.dudas.game.controller;
 
 import com.dudas.game.model.GemType;
-import com.dudas.game.model.provider.PixmapGemsProvider;
+import com.dudas.game.model.provider.DesktopPixmapGemsProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class BoardEmptyBelowTest extends BaseFallBoardTest {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        pixmapGemsProvider = new PixmapGemsProvider(INIT_BOARD_BACKSWAP_WITH_EMPTYBELOW_3X3_PNG);
+        pixmapGemsProvider = new DesktopPixmapGemsProvider(INIT_BOARD_BACKSWAP_WITH_EMPTYBELOW_3X3_PNG);
         pixmapGemsProvider.mockRandomGemTypes(GemType.PURPLE, GemType.PURPLE); // TODO bellow empty finder is called twice => FIX IT
         board = new BoardController(
                 BOARD_WIDTH,

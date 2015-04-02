@@ -43,6 +43,17 @@ public abstract class BaseFallBoardTest extends BaseSwapBoardTest {
         verifyBoard();
     }
 
+    protected void verify2x3ParalelDelayClearFlow(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4) {
+        verifyBoardReady();
+        board.swap(x1, y1, x2, y2);
+        verifySwapEvent(x1, y1, x2, y2);
+        verifyClearSuccessEvent();
+        board.swap(x3, y3, x4, y4);
+        verifySwapEvent(x3, y3, x4, y4);
+        verifyClearSuccessEvent();
+        verifyFallEvent();
+
+    }
     protected void verifyBackSwapWithEmptyBellowFlow(float x1, float y1, float x2, float y2) {
 //        verifyBoardReady();
         board.swap(x1, y1, x2, y2);

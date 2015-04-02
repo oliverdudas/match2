@@ -1,6 +1,6 @@
 package com.dudas.game.controller;
 
-import com.dudas.game.Constants;
+import com.dudas.game.model.provider.DesktopPixmapGemsProvider;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,13 +9,15 @@ import org.junit.Test;
  */
 public class ParallelSuccessClear extends BaseFallBoardTest {
 
+    protected static final String TESTBOARD_2X6_PNG = "init_board_2x6.png";
+
     @Before
     public void setUp() throws Exception {
         super.setUp();
         board = new BoardController(
-                Constants.BOARD_WIDTH,
-                Constants.BOARD_HEIGHT,
-                pixmapGemsProvider,
+                2,
+                6,
+                new DesktopPixmapGemsProvider(TESTBOARD_2X6_PNG),
                 eventManager
         );
     }

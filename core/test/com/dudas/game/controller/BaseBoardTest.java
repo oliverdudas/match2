@@ -5,7 +5,7 @@ import com.dudas.game.controller.event.EventManager;
 import com.dudas.game.controller.event.TwoGemsBoardEvent;
 import com.dudas.game.model.Gem;
 import com.dudas.game.model.GemType;
-import com.dudas.game.model.provider.PixmapGemsProvider;
+import com.dudas.game.model.provider.DesktopPixmapGemsProvider;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -30,7 +30,7 @@ public abstract class BaseBoardTest {
     protected EventManager eventManager;
 
     protected Board board;
-    protected PixmapGemsProvider pixmapGemsProvider;
+    protected DesktopPixmapGemsProvider pixmapGemsProvider;
 
     protected Array<ExpectedSwapEvent> expectedSwapEvents;
     protected Array<ExpectedSwapEvent> expectedBackSwapEvents;
@@ -40,7 +40,7 @@ public abstract class BaseBoardTest {
 
     @Before
     public void setUp() throws Exception {
-        pixmapGemsProvider = new PixmapGemsProvider(TESTBOARD_PNG);
+        pixmapGemsProvider = new DesktopPixmapGemsProvider(TESTBOARD_PNG);
         expectedSwapEvents = new Array<ExpectedSwapEvent>();
         expectedBackSwapEvents = new Array<ExpectedSwapEvent>();
         expectedFallEvents = new Array<ExpectedFallEvent>();
@@ -70,7 +70,7 @@ public abstract class BaseBoardTest {
     }
 
     protected void verifyBoard() {
-        Array<Gem> expectedGems = new PixmapGemsProvider(expectedFinalBoard).getGems(board.getWidth(), board.getHeight());
+        Array<Gem> expectedGems = new DesktopPixmapGemsProvider(expectedFinalBoard).getGems(board.getWidth(), board.getHeight());
         for (Gem gem : board.getGems()) {
             int boardIndex = coordinatesToIndex(gem.getX(), gem.getY());
             Gem expectedGem = expectedGems.get(boardIndex);
