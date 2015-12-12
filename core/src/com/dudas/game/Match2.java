@@ -17,14 +17,7 @@ public class Match2 extends Game {
         // Load assets
         Assets.instance.init(new AssetManager());
 
-//        setScreen(createScreen(GameScreen.class, new GameScreenModule(this)));
-//        setScreen(MatchInjector.injectScreen(this));
-//        GameScreen gameScreen = ObjectGraph.create(new ScreenModule(this)).get(GameScreen.class);
         setScreen(new GameScreen(this));
     }
-
-//    private <SCRN extends Screen> SCRN createScreen(Class<SCRN> screenClass, AbstractModule module) {
-//        return Guice.createInjector(module).getInstance(screenClass);
-//    }
 
 }
