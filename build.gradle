@@ -100,3 +100,8 @@ project(":core") {
 tasks.eclipse.doLast {
     delete ".project"
 }
+
+//gradle.projectsEvaluated {
+//    orintln 'aaaaaaaa'
+////    compileJava.dependsOn(generateSources)
+//}
