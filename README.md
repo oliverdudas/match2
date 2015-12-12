@@ -10,3 +10,8 @@ This is a simple 3 match game.
 2. [Dagger 2](http://google.github.io/dagger)
 3. [junit](https://github.com/junit-team/junit)
 4. [powermock](https://github.com/jayway/powermock)
+
+## Supported platforms
+
+1. desktop
+2. android
