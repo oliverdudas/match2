@@ -3,12 +3,13 @@ package com.dudas.game.screen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.dudas.game.controller.Board;
+import com.dudas.game.di.DaggerStageComponent;
+import com.dudas.game.di.StageComponent;
+import com.dudas.game.di.StageModule;
 import com.dudas.game.stage.GameStage;
 import com.dudas.game.stage.MainStage;
-import com.dudas.game.util.inject.AppInjector;
-import com.google.inject.Inject;
+
+import javax.inject.Inject;
 
 /**
  * Created by OLO on 31. 1. 2015
@@ -17,11 +18,12 @@ public class GameScreen extends AbstractGameScreen {
 
     private static final String TAG = GameScreen.class.getName();
 
-    private MainStage mainStage;
-    private GameStage gameStage;
+    @Inject
+    MainStage mainStage;
+    @Inject
+    GameStage gameStage;
     private boolean paused;
 
-    @Inject
     public GameScreen(Game game) {
         super(game);
     }
@@ -50,10 +52,15 @@ public class GameScreen extends AbstractGameScreen {
 
     @Override
     public void show() {
-        SpriteBatch batch = new SpriteBatch();
-        mainStage = new MainStage(batch);
-        Board board = AppInjector.createBoard();
-        gameStage = new GameStage(mainStage.getBatch(), board);
+        StageComponent stageComponent = DaggerStageComponent.builder()
+                .stageModule(new StageModule())
+                .build();
+        stageComponent.inject(this);
+
+//        SpriteBatch batch = new SpriteBatch();
+//        mainStage = new MainStage(batch);
+//        Board board = AppInjector.createBoard();
+//        gameStage = new GameStage(mainStage.getBatch(), board);
 //        Gdx.input.setCatchBackKey(true);
     }
 

@@ -2,11 +2,8 @@ package com.dudas.game.controller.helper;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
-import com.dudas.game.Constants;
-import com.dudas.game.model.Gem;
 import com.dudas.game.exception.NeighborException;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import com.dudas.game.model.Gem;
 
 /**
  * Created by OLO on 22. 2. 2015
@@ -20,9 +17,7 @@ public class DefaultBoardHelper implements BoardHelper {
     private float maxBoardIndex;
     private float minBoardIndex;
 
-    @Inject
-    public DefaultBoardHelper(@Named(Constants.WIDTH) float width,
-                              @Named(Constants.HEIGHT) float height) {
+    public DefaultBoardHelper(float width, float height) {
         this.width = width;
         this.height = height;
         init();

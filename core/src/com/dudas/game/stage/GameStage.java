@@ -7,8 +7,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
-import com.dudas.game.controller.Board;
 import com.dudas.game.Constants;
+import com.dudas.game.controller.Board;
 import com.dudas.game.exception.BoardException;
 import com.dudas.game.stage.actor.BoardActor;
 import com.dudas.game.stage.actor.GemActor;
@@ -21,7 +21,9 @@ import com.dudas.game.util.ExtendViewportWithRightCamera;
 public class GameStage extends Stage {
 
     private Group boardGroup;
+
     private Board board;
+
     private Vector2 touchPosition;
     private GemActor selectedActor;
     private GemActor hitActor;

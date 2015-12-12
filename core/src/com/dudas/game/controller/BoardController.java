@@ -3,24 +3,17 @@ package com.dudas.game.controller;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.TimeUtils;
-import com.dudas.game.Constants;
 import com.dudas.game.controller.event.*;
-import com.dudas.game.controller.finder.ClearFinder;
 import com.dudas.game.controller.finder.BellowEmptyFinder;
+import com.dudas.game.controller.finder.ClearFinder;
 import com.dudas.game.controller.finder.FallFinder;
 import com.dudas.game.controller.finder.GemFinder;
 import com.dudas.game.controller.helper.BoardHelper;
 import com.dudas.game.controller.helper.DefaultBoardHelper;
 import com.dudas.game.model.Gem;
 import com.dudas.game.model.provider.GemsProvider;
-import com.dudas.game.model.provider.TestGemsProvider;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Arrays;
 
 /**
  * Created by foxy on 04/02/2015.
@@ -40,7 +33,8 @@ public class BoardController implements Board {
     private Pool<Array<Gem>> gemArrayPool;
 
     public BoardController(float width, float height) {
-        this(width, height, new TestGemsProvider());
+        this.width = width;
+        this.height = height;
     }
 
     public BoardController(float width, float height, GemsProvider provider) {
@@ -51,9 +45,8 @@ public class BoardController implements Board {
         this(width, height, gemsProvider, eventManager, new DefaultBoardHelper(width, height));
     }
 
-    @Inject
-    public BoardController(@Named(Constants.WIDTH) float width,
-                           @Named(Constants.HEIGHT) float height,
+    public BoardController(float width,
+                           float height,
                            GemsProvider provider,
                            EventManager eventManager,
                            BoardHelper helper) {
@@ -64,6 +57,20 @@ public class BoardController implements Board {
         this.helper = helper;
         init();
     }
+
+//    @Inject
+//    public BoardController(@Named(Constants.WIDTH) float width,
+//                           @Named(Constants.HEIGHT) float height,
+//                           GemsProvider provider,
+//                           EventManager eventManager,
+//                           BoardHelper helper) {
+//        this.width = width;
+//        this.height = height;
+//        this.gemsProvider = provider;
+//        this.eventManager = eventManager;
+//        this.helper = helper;
+//        init();
+//    }
 
     private void init() {
         initGemArrayPool();
